@@ -3,21 +3,28 @@ import { FolderOpen, Search, ListIcon, LayoutGrid, Upload } from 'lucide-vue-nex
 import SideBarCard from '@/components/SideBarCard.vue'
 import FileCard from '@/components/FileCard.vue'
 import FileList from '@/components/FileList.vue'
-import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { formatFileSize } from '@/utils/format'
 import { dashboardService } from '@/services/dashboardService'
+import FilePreviewer from '@/components/file-preview/FilePreviewer.vue'
+import { arrayBufferToBlob } from '@/utils/helper'
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const showFileList = ref(false)
 const files = ref<FileMetadata[]>([])
 const selectedFileID = ref<string | null>(null)
+const togglePreview = ref(false)
+const fileContent = ref<Blob | null>(null)
+const fileType = ref<string | null>(null)
+const loading = ref<boolean>(false)
 
 export interface FileMetadata {
   id: string
-  name: string
-  type: string
-  size: number
-  lastModified: number
+  file_id: string
+  name: string | undefined
+  type?: string
+  size?: number
+  lastModified?: number
   content?: string | ArrayBuffer | null
   blobUrl: string
 }
@@ -30,7 +37,20 @@ onBeforeUnmount(() => {
   })
 })
 
+const handleDeleteFile = async (item_id: string, file_id: string) => {
+  loading.value = true
+  const { itemData, fileData } = await dashboardService.deleteItemAndFile(item_id, file_id)
+  console.log('itemData: ', itemData)
+  console.log('fileData: ', fileData)
+  if (itemData === 200 && fileData === 200) {
+    files.value = []
+    await getData()
+  }
+  loading.value = false
+}
+
 const handleFileUpload = async (event: Event) => {
+  loading.value = true
   const input = event.target as HTMLInputElement
   const uploadedFiles = input.files
   if (!uploadedFiles) return
@@ -42,18 +62,13 @@ const handleFileUpload = async (event: Event) => {
     if (!file) continue
     const type = getFileType(file.name)
 
-    let content: string | ArrayBuffer | null | undefined = null
+    const content: string | ArrayBuffer | null | undefined = null
 
-    // Tạo blob URL để preview
-    const blobUrl = URL.createObjectURL(file)
-
-    // Đọc nội dung text / excel
-    if (type === 'text' || type === 'excel') {
-      content = await readFileContent(file, type)
-    }
+    const blobUrl = ''
 
     newFiles.push({
       id: Math.random().toString(36).substr(2, 9),
+      file_id: '',
       name: file.name,
       type,
       size: file.size,
@@ -63,83 +78,150 @@ const handleFileUpload = async (event: Event) => {
     })
   }
 
-  // Update state
-  files.value.push(...newFiles)
+  const promises = newFiles.map((file) => dashboardService.uploadItem(file))
+  Promise.all(promises)
+    .then(() => {
+      console.log('Upload completed')
+    })
+    .catch((error) => {
+      console.log('Upload failed', error)
+    })
+    .finally(() => {
+      console.log('Upload finished')
+      console.log('promise: ', promises)
+    })
 
-  // Reset input (cho phép chọn lại cùng file)
+  const filePromises = Array.from(uploadedFiles).map((file: File) =>
+    dashboardService.uploadFile(file),
+  )
+  await Promise.all(filePromises)
+    .then(() => {
+      console.log('upload file completed')
+    })
+    .catch((error) => {
+      console.log('upload file failed', error)
+    })
+    .finally(() => {
+      console.log('upload file finished')
+      console.log('file promises: ', filePromises)
+    })
+
+  const updateItemPromises = filePromises.map(async (filePromise, index) => {
+    if (!filePromise) return
+    if (!promises[index]) return
+    return dashboardService.updateItem((await promises[index]).item_id, (await filePromise).file_id)
+  })
+  await Promise.all(updateItemPromises)
+    .then(() => {
+      console.log('update item completed')
+    })
+    .catch((error) => {
+      console.log('update item failed', error)
+    })
+    .finally(() => {
+      console.log('update item finished')
+      console.log('update item promises: ', updateItemPromises)
+    })
+
   if (fileInputRef.value) {
     fileInputRef.value.value = ''
   }
+  files.value = []
+  await getData()
+  loading.value = false
 }
 
 const getFileType = (filename: string): FileMetadata['type'] => {
+  if (!filename) return 'unknown'
+  if (!filename.includes('.')) return 'unknown'
   const ext = filename.split('.').pop()?.toLowerCase()
   if (['txt', 'md', 'json', 'js', 'ts', 'tsx', 'html', 'css', 'csv'].includes(ext || ''))
     return 'text'
+  if (['docx'].includes(ext || '')) return 'docx'
   if (['pdf'].includes(ext || '')) return 'pdf'
   if (['xlsx', 'xls'].includes(ext || '')) return 'excel'
   if (['png', 'jpg', 'jpeg', 'gif', 'svg'].includes(ext || '')) return 'image'
   return 'unknown'
 }
 
-const readFileContent = (file: File, type: string): Promise<string | ArrayBuffer | null> => {
-  return new Promise((resolve) => {
-    const reader = new FileReader()
-    reader.onload = (e) => resolve(e.target?.result ?? null)
-    if (type === 'excel') {
-      reader.readAsArrayBuffer(file)
-    } else {
-      reader.readAsText(file)
-    }
-  })
-}
-
 onMounted(() => {
   fileInputRef.value?.focus()
+  getData()
 })
 
 const triggerUpload = () => {
   fileInputRef.value?.click()
 }
 
-// const handleFileDelete = (fileId: string) => {
-//   files.value = files.value.filter((file) => file.id !== fileId)
-// }
+const handleSelectedFile = async (file_id: string, fileName: string) => {
+  fileContent.value = null
+  fileType.value = ''
+  await nextTick()
+  selectedFileID.value = file_id
+  fileType.value = getFileType(fileName) || ''
+  const buffer = await getFile(file_id)
+  if (fileType.value === 'docx') {
+    fileContent.value = arrayBufferToBlob(
+      buffer,
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    )
+  }
 
-// const handFilePreview = (fileId: string) => {
-//   selectedFileID.value = fileId
-// }
+  if (fileType.value === 'pdf') {
+    fileContent.value = arrayBufferToBlob(buffer, 'application/pdf')
+  }
 
-const handleSelectedFile = (fileID: string | null) => {
-  selectedFileID.value = fileID
+  if (fileType.value === 'image') {
+    fileContent.value = arrayBufferToBlob(buffer, 'image/*')
+  }
+
+  await nextTick()
+  console.log('file content: ', fileContent.value)
+  console.log('file type: ', fileType.value)
+  console.log('file id: ', file_id)
 }
 
-watch(selectedFileID, () => {
-  console.log('selected file: ', selectedFileID.value)
-  console.log('files: ', files.value)
-})
+const getFile = async (file_id: string) => {
+  const res = await dashboardService.getFile(file_id)
+  return res
+}
 
-watch(files, async () => {
-  const res = await dashboardService.getFiles(
-    '698081c54eabe6a4410ca1ae',
-    '6980852b6d977907383822e1',
+const getData = async () => {
+  const res = await dashboardService.getItems(
+    '698081c54eabe6a4410ca1ae', //workspace id
+    '6980852b6d977907383822e1', //datastore id
   )
-  console.log(typeof res)
-  console.log(res)
-})
 
-const test = async () => {
-  const res = await dashboardService.getFiles(
-    '698081c54eabe6a4410ca1ae',
-    '6980852b6d977907383822e1',
-  )
-  console.log(typeof res)
-  console.log(res)
+  const newFiles: FileMetadata[] = []
+  for (let i = 0; i < res.items.length; i++) {
+    const file = res.items[i]
+    if (!file) continue
+    const type = getFileType(file.file_name)
+    const file_id = file.file_id || ''
+    newFiles.push({
+      id: file.i_id || '',
+      file_id,
+      name: file.file_name,
+      type,
+      size: file.file_size,
+      lastModified: new Date(file.created_at).getTime(),
+      blobUrl: '',
+    })
+  }
+
+  // Update state
+  files.value.push(...newFiles)
 }
 </script>
 
 <template>
-  <div id="dashboard" class="h-screen flex border-y-2 border-gray-200 overflow-hidden">
+  <div
+    v-if="loading"
+    class="flex items-center justify-center h-screen w-screen z-50 bg-black/50 fixed inset-0"
+  >
+    <b>Loading...</b>
+  </div>
+  <div v-else id="dashboard" class="h-screen flex border-y-2 border-gray-200 overflow-hidden">
     <header id="sidebar" class="hidden md:flex flex-col h-screen w-1/12 text-indigo-500">
       <div id="sidebar-logo" class="flex h-16 items-center justify-center border-b border-gray-200">
         <FolderOpen :size="20" />
@@ -208,30 +290,43 @@ const test = async () => {
         </div>
       </div>
 
-      <div id="main-content" class="flex flex-1 overflow-y-auto bg-gray-300">
+      <div id="main-content" class="flex flex-1 overflow-y-auto bg-gray-200">
+        <div class="w-full overflow-y-auto">
+          <div
+            v-if="!showFileList"
+            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 content-start"
+          >
+            <FileCard
+              v-for="i in files"
+              :key="i.file_id"
+              :id="i.id"
+              :file_id="i.file_id"
+              :fileName="i.name || ''"
+              :fileIcon="i.type"
+              :fileSize="formatFileSize(i.size)"
+              :blobUrl="i.blobUrl"
+              :active="selectedFileID === i.file_id"
+              @selected-file="handleSelectedFile"
+              @toggle-preview="togglePreview = true"
+              @delete="handleDeleteFile"
+            />
+          </div>
+          <div v-else class="w-full">
+            <FileList />
+          </div>
+        </div>
+
         <div
-          v-if="!showFileList"
-          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 m-4 content-start"
+          class="flex flex-col h-full w-full gap-4 bg-gray-900 text-white transition-all duration-300"
+          v-show="togglePreview"
         >
-          <FileCard
-            v-for="i in files"
-            :key="i.id"
-            :id="i.id"
-            :fileName="i.name"
-            :fileIcon="i.type"
-            :fileSize="formatFileSize(i.size)"
-            :blobUrl="i.blobUrl"
-            :active="selectedFileID === i.id"
-            @selected-file="handleSelectedFile"
-          />
-        </div>
-
-        <div v-else class="w-full">
-          <FileList />
-        </div>
-
-        <div>
-          <button @click="test">Test</button>
+          <div class="flex items-center justify-between mx-4">
+            <p class="p-4">This is preview sidebar</p>
+            <button @click="togglePreview = !togglePreview" class="top-2 right-2">X</button>
+          </div>
+          <div class="flex flex-1 overflow-y-auto">
+            <FilePreviewer :fileContent="fileContent || undefined" :fileType="fileType || ''" />
+          </div>
         </div>
       </div>
     </main>
