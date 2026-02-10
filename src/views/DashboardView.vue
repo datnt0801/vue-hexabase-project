@@ -8,6 +8,7 @@ import { formatFileSize } from '@/utils/format'
 import { dashboardService } from '@/services/dashboardService'
 import FilePreviewer from '@/components/file-preview/FilePreviewer.vue'
 import { arrayBufferToBlob } from '@/utils/helper'
+import { useRouter } from 'vue-router'
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const showFileList = ref(false)
@@ -17,6 +18,9 @@ const togglePreview = ref(false)
 const fileContent = ref<Blob | null>(null)
 const fileType = ref<string | null>(null)
 const loading = ref<boolean>(false)
+const search = ref<string>('')
+
+const router = useRouter()
 
 export interface FileMetadata {
   id: string
@@ -36,6 +40,10 @@ onBeforeUnmount(() => {
     }
   })
 })
+
+const handleSearch = async () => {
+  getData(search.value)
+}
 
 const handleDeleteFile = async (item_id: string, file_id: string) => {
   loading.value = true
@@ -186,10 +194,13 @@ const getFile = async (file_id: string) => {
   return res
 }
 
-const getData = async () => {
+const getData = async (search?: string) => {
   const res = await dashboardService.getItems(
     '698081c54eabe6a4410ca1ae', //workspace id
     '6980852b6d977907383822e1', //datastore id
+    search,
+    // import.meta.env.VITE_HEXABASE_WORKSPACE_ID,
+    // import.meta.env.VITE_HEXABASE_DATASTORE_ID,
   )
 
   const newFiles: FileMetadata[] = []
@@ -210,6 +221,7 @@ const getData = async () => {
   }
 
   // Update state
+  files.value = []
   files.value.push(...newFiles)
 }
 </script>
@@ -229,9 +241,9 @@ const getData = async () => {
       </div>
 
       <div id="sidebar-tabs" class="flex flex-col flex-1 gap-2 m-1 border-gray-200 border-y-2">
-        <SideBarCard title="Danh mục" />
-        <SideBarCard title="Danh mục" />
-        <SideBarCard title="Danh mục" />
+        <SideBarCard title="File" @click="router.push('/dashboard')" class="cursor-pointer" />
+        <SideBarCard title="Food" @click="router.push('/food')" class="cursor-pointer" />
+        <SideBarCard title="Danh mục" @click="router.push('/category')" class="cursor-pointer" />
       </div>
 
       <div id="sidebar-usage" class="flex h-20 p-1">
@@ -265,6 +277,8 @@ const getData = async () => {
               type="text"
               placeholder="Search"
               class="pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none w-32 sm:w-48 md:w-64 transition-all"
+              @input="handleSearch"
+              v-model="search"
             />
           </div>
 

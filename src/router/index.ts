@@ -23,6 +23,12 @@ const router = createRouter({
     //   component: () => import('../views/AdminView.vue'),
     //   meta: { requiresAuth: true, requiresAdmin: true },
     // },
+    {
+      path: '/food',
+      name: 'food',
+      component: () => import('../views/FoodView.vue'),
+      meta: { requiresAuth: true },
+    },
   ],
 })
 
@@ -34,7 +40,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !isLoggedIn) {
     next('/login')
   } else if (to.meta.requiresAdmin && userRole !== 'admin') {
-    next({ name: 'home' })
+    next({ name: 'dashboard' })
   } else {
     next()
   }

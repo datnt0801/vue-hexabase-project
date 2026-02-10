@@ -22,7 +22,21 @@ interface FileItem {
 }
 
 export const dashboardService = {
-  getItems: async (applicationId: string, datastoreId: string) => {
+  getItems: async (applicationId: string, datastoreId: string, search?: string) => {
+    if (search) {
+      const res = await api.post<{ items: FileItem[] }>(
+        `/applications/${applicationId}/datastores/${datastoreId}/items/search`,
+        {
+          page: 1,
+          per_page: 0,
+          use_display_id: true,
+          return_number_value: true,
+          conditions: [{ id: 'file_name', search_value: [search], exact_match: false }],
+          use_or_condition: false,
+        },
+      )
+      return res.data
+    }
     const res = await api.post<{ items: FileItem[] }>(
       `/applications/${applicationId}/datastores/${datastoreId}/items/search`,
       {
