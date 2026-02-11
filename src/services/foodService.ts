@@ -15,6 +15,7 @@ export interface Food {
   price: number
   i_id: string
   food_id: string
+  'radio test': string
 }
 
 export interface MenuDetail {
@@ -43,13 +44,16 @@ export const foodService = {
     const res = await api.post<{ items: MenuDetail[] }>(
       `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/search`,
       {
-        conditions: [{ id: 'menu_id', search_value: [menu_id] }],
+        conditions: [{ id: 'menu_id', search_value: ['m1'] }],
         use_or_condition: false,
         page: 1,
         per_page: 0,
         use_display_id: true,
+        return_number_value: true,
+        include_lookups: true,
       },
     )
+    console.log('res call api: ', res.data)
     return res.data
   },
 }

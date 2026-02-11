@@ -5,16 +5,24 @@
     <main>
       <div v-for="value in source" :key="value">{{ value }}</div>
     </main>
-    <!-- <div
-      v-for="item in data?.items"
-      :key="item.menu_id"
+    <div
+      v-for="menuItem in menu"
+      :key="menuItem.menu_id"
       class="cursor-pointer"
-      @click="handleClickMenu(item.menu_id)"
+      @click="handleClickMenu(menuItem.menu_id)"
     >
-      <div>{{ item.name }}</div>
-      <div>{{ item.description }}</div>
-      <div>{{ item.price }}</div>
-    </div> -->
+      <div>{{ menuItem.name }}</div>
+      <div>{{ menuItem.description }}</div>
+      <div>{{ menuItem.price }}</div>
+    </div>
+    <div v-if="selectedMenuId">
+      <div v-for="menuDetailItem in menuDetail" :key="menuDetailItem.menu_id">
+        <div>{{ menuDetailItem.lookup_items.food_lookup.name }}</div>
+        <div>{{ menuDetailItem.lookup_items.food_lookup.description }}</div>
+        <div>{{ menuDetailItem.lookup_items.food_lookup.price }}</div>
+        <div>{{ menuDetailItem.lookup_items.food_lookup['radio test'] }}</div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -25,13 +33,12 @@ import type { Menu, MenuDetail } from '@/services/foodService'
 
 const menu = ref<Menu[]>()
 const menuDetail = ref<MenuDetail[]>()
+const selectedMenuId = ref<string | null>(null)
 
 onMounted(() => {
   foodService.getMenu().then((res) => {
     menu.value = res.items
-  })
-  foodService.getMenuDetail('m1').then((res) => {
-    menuDetail.value = res.items
+    console.log('Menu: ', menu.value)
   })
 })
 const source = ref<string[]>([
@@ -48,4 +55,12 @@ const source = ref<string[]>([
   'wa',
   'staa',
 ])
+
+const handleClickMenu = (menu_id: string) => {
+  selectedMenuId.value = menu_id
+  foodService.getMenuDetail(menu_id).then((res) => {
+    menuDetail.value = res.items
+    console.log('Menu detail: ', menuDetail.value)
+  })
+}
 </script>
