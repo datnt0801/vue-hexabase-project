@@ -37,6 +37,7 @@ const handleLogin = async () => {
 
     console.log('Login response:', res)
     authStore.login(res)
+    localStorage.setItem('token', res.token)
     console.log('isAuthenticated:', authStore.isAuthenticated)
     console.log('token:', authStore.token)
 

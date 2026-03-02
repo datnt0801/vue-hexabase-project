@@ -29,6 +29,33 @@ const router = createRouter({
       component: () => import('../views/FoodView.vue'),
       meta: { requiresAuth: true },
     },
+    {
+      path: '/category',
+      name: 'category',
+      component: () => import('../views/CategoryView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/user',
+      name: 'user',
+      component: () => {
+        return import('../views/UserView.vue')
+      },
+    },
+    {
+      path: '/react',
+      name: 'react',
+      component: () => {
+        return import('../views/UserViewByReact.vue')
+      },
+    },
+    {
+      path: '/user/register',
+      name: 'user-register',
+      component: () => {
+        return import('../views/RegisterView.vue')
+      },
+    },
   ],
 })
 

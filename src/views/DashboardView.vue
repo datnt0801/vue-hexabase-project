@@ -153,7 +153,6 @@ const getFileType = (filename: string): FileMetadata['type'] => {
 }
 
 onMounted(() => {
-  fileInputRef.value?.focus()
   getData()
 })
 
@@ -243,7 +242,7 @@ const getData = async (search?: string) => {
       <div id="sidebar-tabs" class="flex flex-col flex-1 gap-2 m-1 border-gray-200 border-y-2">
         <SideBarCard title="File" @click="router.push('/dashboard')" class="cursor-pointer" />
         <SideBarCard title="Food" @click="router.push('/food')" class="cursor-pointer" />
-        <SideBarCard title="Danh mục" @click="router.push('/category')" class="cursor-pointer" />
+        <SideBarCard title="Category" @click="router.push('/category')" class="cursor-pointer" />
       </div>
 
       <div id="sidebar-usage" class="flex h-20 p-1">
