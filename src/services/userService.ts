@@ -38,21 +38,31 @@ export const userService = {
     )
     return res.data
   },
-  createUser: async (user: User, departmentId: string, positionId: string, companyId: string) => {
+  createUser: async (
+    user: User,
+    departmentId: string,
+    positionId: string,
+    companyId: string,
+  ) => {
+    const { lookup_items, ...userWithoutLookup } = user
+
     const res = await api.post<{
       item: {
         i_id: string
       }
-    }>(`/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/new`, {
-      item: {
-        ...user,
-        department_lookup: departmentId,
-        position_lookup: positionId,
-        company_lookup: companyId,
+    }>(
+      `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/new`,
+      {
+        item: {
+          ...userWithoutLookup,
+          department_lookup: departmentId,
+          position_lookup: positionId,
+          company_lookup: companyId,
+        },
+        return_item_result: true,
+        return_display_id: true,
       },
-      return_item_result: true,
-      return_display_id: true,
-    })
+    )
     return res.data
   },
 }
