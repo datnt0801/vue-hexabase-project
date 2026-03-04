@@ -1,7 +1,29 @@
 import api from '@/services/api'
-import type { Department, Position, User } from '@/shared/type'
+import type { AddUserResponse, Department, Position, User } from '@/shared/type'
 
 export const userService = {
+  getUser: async (user_id: string) => {
+    const res = await api.post<{ items: User[] }>(
+      `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/search`,
+      {
+        conditions: [
+          {
+            id: 'user_id',
+            search_value: [user_id],
+            exact_match: true,
+          },
+        ],
+        use_or_condition: false,
+        page: 1,
+        per_page: 1,
+        use_display_id: true,
+        return_number_value: true,
+        include_lookups: true,
+      },
+    )
+
+    return res.data
+  },
   getUsers: async () => {
     const res = await api.post<{ items: User[] }>(
       `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/search`,
@@ -12,8 +34,7 @@ export const userService = {
         include_lookups: true,
       },
     )
-    console.log('get user data from service:', res.data)
-    console.log('type of res.data.items', typeof res.data.items)
+
     return res.data
   },
   getDepartments: async () => {
@@ -55,6 +76,7 @@ export const userService = {
       {
         item: {
           ...userWithoutLookup,
+          user_name: user.email.split('@')[0],
           department_lookup: departmentId,
           position_lookup: positionId,
           company_lookup: companyId,
@@ -63,6 +85,71 @@ export const userService = {
         return_display_id: true,
       },
     )
+    return res.data
+  },
+  updateUser: async (
+    user: User,
+    departmentId: string,
+    positionId: string,
+    companyId: string,
+  ) => {
+    const { user_id, i_id, lookup_items, ...userWithoutLookup } = user
+
+    const res = await api.post<{
+      itemHistory: {
+        IsChanged: boolean
+      }
+    }>(
+      `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/edit/${user.i_id}`,
+      {
+        comment: 'test-comment',
+        item: {
+          first_name_kanji: user.first_name_kanji,
+          last_name_kanji: user.last_name_kanji,
+          first_name_kana: user.first_name_kana,
+          last_name_kana: user.last_name_kana,
+          email: user.email,
+          user_name: user.email.split('@')[0],
+          position_code: user.position_code,
+          department_code: user.department_code,
+          company_code: user.company_code,
+
+          department_lookup: departmentId,
+          position_lookup: positionId,
+          company_lookup: companyId,
+        },
+        is_force_update: true,
+        use_display_id: true,
+      },
+    )
+    return res.data
+  },
+  deleteUser: async (user_i_id: string) => {
+    const res = await api.delete(
+      `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/delete/${user_i_id}`,
+      {
+        data: {
+          comment: 'test-comment',
+        },
+      },
+    )
+    return res.data
+  },
+  addUser: async (user: User) => {
+    const res = await api.post<AddUserResponse>(`/users`, {
+      email: user.email,
+      g_id: 'Grp-XTzrUOg3',
+      username: user.email.split('@')[0],
+      send_password_to_email: true,
+      sender_address: 'noreply@hexabase.com',
+      no_confirm_email: true,
+      tmp_password: '123456',
+      invitor_id: '698080f9a0ea6a03fd2679b0',
+      conf_email_template_id: 'string',
+      confirm_email_ack: true,
+      exclusive_w_id: '6980819286bbce7dbccd7efb',
+      user_code: user.email.split('@')[0],
+    })
     return res.data
   },
 }

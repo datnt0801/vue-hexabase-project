@@ -79,7 +79,7 @@
               </label>
 
               <div class="grid grid-cols-2 gap-4">
-                <div class="">
+                <div>
                   <input
                     type="text"
                     placeholder="姓を入力してください / Enter last name"
@@ -98,7 +98,7 @@
                     全角のみ入力できます。
                   </p>
                 </div>
-                <div class="">
+                <div>
                   <input
                     type="text"
                     placeholder="名を入力してください / Enter first name"
@@ -326,13 +326,13 @@
                 キャンセル Cancel
               </button>
               <button
-                @click="registerUser"
+                @click="updateUser"
                 class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                 :class="{
                   'bg-gray-300 cursor-not-allowed': !isValid,
                 }"
               >
-                登録する Register
+                更新する Update
               </button>
             </div>
           </div>
@@ -348,13 +348,16 @@ import { userService } from '@/services/userService'
 import type { Department, Position, User } from '@/shared/type'
 import { ProfileFilled } from '@ant-design/icons-vue'
 import { LogOutIcon } from 'lucide-vue-next'
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, reactive } from 'vue'
+import { useRoute } from 'vue-router'
 const departments = ref<Department[]>([])
 const positions = ref<Position[]>([])
 const selectedPosition = ref<Position>()
 const selectedDepartment = ref<Department>()
+const user_id = ref<string>('')
+const route = useRoute()
 
-const user = reactive<User>({
+const user = ref<User>({
   first_name_kanji: '',
   last_name_kanji: '',
   first_name_kana: '',
@@ -375,6 +378,48 @@ const user = reactive<User>({
       position_name: '',
     },
   },
+})
+
+const isValidLastNameKanji = computed(() => {
+  const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
+  return regex.test(user.value.last_name_kanji)
+})
+const isValidLastNameKana = computed(() => {
+  const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
+  return regex.test(user.value.last_name_kana)
+})
+const isValidFirstNameKanji = computed(() => {
+  const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
+  return regex.test(user.value.first_name_kanji)
+})
+const isValidFirstNameKana = computed(() => {
+  const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
+  return regex.test(user.value.first_name_kana)
+})
+const isValidEmail = computed(() => {
+  return (
+    user.value.email.includes('@') &&
+    user.value.email.includes('.') &&
+    user.value.email.length > 0
+  )
+})
+
+const isValid = computed(() => {
+  return (
+    isValidLastNameKanji.value &&
+    isValidLastNameKana.value &&
+    isValidFirstNameKanji.value &&
+    isValidFirstNameKana.value &&
+    isValidEmail.value
+  )
+})
+
+const touched = reactive({
+  last_name_kanji: false,
+  first_name_kanji: false,
+  last_name_kana: false,
+  first_name_kana: false,
+  email: false,
 })
 
 const sidebar_data = ref([
@@ -404,44 +449,6 @@ const sidebar_data = ref([
   },
 ])
 
-const isValidLastNameKanji = computed(() => {
-  const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
-  return regex.test(user.last_name_kanji)
-})
-const isValidLastNameKana = computed(() => {
-  const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
-  return regex.test(user.last_name_kana)
-})
-const isValidFirstNameKanji = computed(() => {
-  const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
-  return regex.test(user.first_name_kanji)
-})
-const isValidFirstNameKana = computed(() => {
-  const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
-  return regex.test(user.first_name_kana)
-})
-const isValidEmail = computed(() => {
-  return user.email.includes('@') && user.email.includes('.') && user.email.length > 0
-})
-
-const isValid = computed(() => {
-  return (
-    isValidLastNameKanji.value &&
-    isValidLastNameKana.value &&
-    isValidFirstNameKanji.value &&
-    isValidFirstNameKana.value &&
-    isValidEmail.value
-  )
-})
-
-const touched = reactive({
-  last_name_kanji: false,
-  first_name_kanji: false,
-  last_name_kana: false,
-  first_name_kana: false,
-  email: false,
-})
-
 const openIndex = ref<number | null>(null)
 
 const toggleMenu = (index: number) => {
@@ -455,43 +462,57 @@ const handleCancel = () => {
 onMounted(() => {
   getDepartments()
   getPositions()
+  user_id.value = route.params.user_id as string
+  console.log('user_id: ', user_id.value)
+  if (user_id.value) {
+    getUserInfo(user_id.value)
+  }
 })
+
+const getUserInfo = async (user_id: string) => {
+  const res = await userService.getUser(user_id)
+  console.log('user: ', res)
+  user.value = res.items[0] as User
+  console.log('user: ', user.value)
+}
 
 const getDepartments = async () => {
   const res = await userService.getDepartments()
   departments.value = res.items
-  // console.log('departments: ', departments)
+
+  if (user.value.department_code) {
+    selectedDepartment.value = departments.value.find(
+      (d) => d.department_code === user.value.department_code,
+    )
+  }
 }
 const getPositions = async () => {
   const res = await userService.getPosition()
   positions.value = res.items
-  // console.log('positions: ', positions)
+
+  if (user.value.position_code) {
+    selectedPosition.value = positions.value.find(
+      (p) => p.position_code === user.value.position_code,
+    )
+  }
 }
 
-const registerUser = async () => {
-  // console.log('selectedDepartment: ', selectedDepartment.value?.i_id)
-  // console.log('selectedPosition: ', selectedPosition.value?.i_id)
-  const res = await userService.createUser(
-    {
-      ...user,
-      department_code: selectedDepartment.value?.department_code || '',
-      position_code: selectedPosition.value?.position_code || '',
-      company_code: 'K1',
-    },
+const updateUser = async () => {
+  console.log('update user: ', user.value)
+  console.log('selectedDepartment: ', selectedDepartment.value?.i_id)
+  console.log('selectedPosition: ', selectedPosition.value?.i_id)
+  const res = await userService.updateUser(
+    user.value,
     selectedDepartment.value?.i_id || '',
     selectedPosition.value?.i_id || '',
     '69a504f0c748fcad046f85e5', //company i_id
   )
-  console.log('register user: ', res)
-  addUser()
-}
-
-const addUser = async () => {
-  console.log('user to add: ', user)
-  const res = await userService.addUser(user)
-  console.log('add user: ', res)
-  if (res.added) {
-    alert('ユーザーを登録しました')
+  console.log('update user: ', res)
+  if (res.itemHistory?.IsChanged === true) {
+    router.push('/react')
+    alert('更新しました')
+  } else {
+    alert('更新に失敗しました')
   }
 }
 </script>
