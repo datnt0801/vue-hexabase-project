@@ -460,15 +460,23 @@ onMounted(() => {
 const getDepartments = async () => {
   const res = await userService.getDepartments()
   departments.value = res.items
-  // console.log('departments: ', departments)
+  console.log('departments: ', departments)
 }
 const getPositions = async () => {
   const res = await userService.getPosition()
   positions.value = res.items
-  // console.log('positions: ', positions)
+  console.log('positions: ', positions)
 }
 
 const registerUser = async () => {
+  if (
+    selectedPosition.value?.department_code !== selectedDepartment.value?.department_code
+  ) {
+    alert(
+      '部署と役職のコードが一致しません / The department and position code do not match',
+    )
+    return
+  }
   // console.log('selectedDepartment: ', selectedDepartment.value?.i_id)
   // console.log('selectedPosition: ', selectedPosition.value?.i_id)
   const res = await userService.createUser(
@@ -491,7 +499,11 @@ const addUser = async () => {
   const res = await userService.addUser(user)
   console.log('add user: ', res)
   if (res.added) {
-    alert('ユーザーを登録しました')
+    alert('ユーザーを登録しました / The user has been registered successfully')
+    router.push('/react')
+  }
+  if (res.exists) {
+    alert('ユーザーは既に存在します / The user already exists')
   }
 }
 </script>

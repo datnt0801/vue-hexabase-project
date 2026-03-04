@@ -6,6 +6,7 @@ export type Department = {
 
 export type Position = {
   i_id: string
+  department_code: string
   position_name: string
   position_code: string
 }

@@ -498,6 +498,14 @@ const getPositions = async () => {
 }
 
 const updateUser = async () => {
+  if (
+    selectedPosition.value?.department_code !== selectedDepartment.value?.department_code
+  ) {
+    alert(
+      '部署と役職のコードが一致しません / The department and position code do not match',
+    )
+    return
+  }
   console.log('update user: ', user.value)
   console.log('selectedDepartment: ', selectedDepartment.value?.i_id)
   console.log('selectedPosition: ', selectedPosition.value?.i_id)

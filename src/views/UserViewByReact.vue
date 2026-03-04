@@ -43,6 +43,9 @@
       <!-- Header -->
       <div class="font-bold text-lg">ACF BaaS Workflow</div>
       <div class="flex gap-2">
+        <button @click="toggleLanguage" class="text-sm">
+          {{ language === 'en' ? 'En' : 'JP' }}
+        </button>
         <button class="flex items-center gap-2">
           <ProfileFilled /> <span>bp_acf_baas_wf_dev</span>
         </button>
@@ -124,7 +127,9 @@
                 登録する
               </button>
             </div>
-            <div class="mx-4 text-sm"><p>検索結果: 38件</p></div>
+            <div class="mx-4 text-sm">
+              <p>検索結果: {{ filteredUsers.length }}件</p>
+            </div>
           </div>
           <!-- table -->
           <div class="flex-1 min-w-0">
@@ -135,25 +140,51 @@
                   <!-- HEADER -->
                   <thead class="bg-gray-100 sticky top-0 z-10">
                     <tr>
-                      <th class="px-4 py-2 text-left border-b">User ID</th>
-                      <th class="px-4 py-2 text-left border-b">First Name Kanji</th>
-                      <th class="px-4 py-2 text-left border-b">Last Name Kanji</th>
-                      <th class="px-4 py-2 text-left border-b">First Name Kana</th>
-                      <th class="px-4 py-2 text-left border-b">Last Name Kana</th>
-                      <th class="px-4 py-2 text-left border-b">Email</th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'User ID' : 'ユーザーID' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'First Name Kanji' : '名前（漢字）' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Last Name Kanji' : '姓（漢字）' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'First Name Kana' : '名（カナ）' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Last Name Kana' : '姓（カナ）' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Email' : 'メールアドレス' }}
+                      </th>
                       <th
                         @click="toggleSort"
                         class="px-4 py-2 text-left border-b cursor-pointer hover:bg-gray-50"
                       >
-                        User Name
+                        {{ language === 'en' ? 'User Name' : 'ユーザー名' }}
                       </th>
-                      <th class="px-4 py-2 text-left border-b">Position Code</th>
-                      <th class="px-4 py-2 text-left border-b">Position Name</th>
-                      <th class="px-4 py-2 text-left border-b">Department Code</th>
-                      <th class="px-4 py-2 text-left border-b">Department Name</th>
-                      <th class="px-4 py-2 text-left border-b">Company Code</th>
-                      <th class="px-4 py-2 text-left border-b">Company Name</th>
-                      <th class="px-4 py-2 text-left border-b">Action</th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Position Code' : '役職コード' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Position Name' : '役職名' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Department Code' : '部署コード' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Department Name' : '部署名' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Company Code' : '会社コード' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Company Name' : '会社名' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Action' : '操作' }}
+                      </th>
                     </tr>
                   </thead>
 
@@ -309,6 +340,12 @@ const sortAsc = ref(true)
 const selectedUser = ref<User | null>(null)
 const searchKeyword = ref('')
 const showDeleteModal = ref(false)
+const language = ref('en')
+
+const toggleLanguage = () => {
+  language.value = language.value === 'en' ? 'ja' : 'en'
+}
+
 const toggleMenu = (index: number) => {
   openIndex.value = openIndex.value === index ? null : index
 }
