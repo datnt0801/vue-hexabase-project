@@ -63,6 +63,13 @@ const router = createRouter({
         return import('../views/EditView.vue')
       },
     },
+    {
+      path: '/user/login',
+      name: 'user-login',
+      component: () => {
+        return import('../views/UserLoginView.vue')
+      },
+    },
   ],
 })
 

@@ -21,4 +21,12 @@ export const authService = {
     const res = await api.post('/refresh-token')
     return res.data
   },
+  userLogin: async (user_code: string, password: string) => {
+    const res = await api.post('/login', {
+      user_code: user_code,
+      password: password,
+      exclusive_w_id: '6980819286bbce7dbccd7efb',
+    })
+    return res.data
+  },
 }
