@@ -343,7 +343,7 @@ const selectedDepartment = ref<Department>()
 const user_id = ref<string>('')
 const route = useRoute()
 
-const user = ref<User>({
+const user = reactive<User>({
   approval_permisson: '',
   first_name_kanji: '',
   last_name_kanji: '',
@@ -369,24 +369,22 @@ const user = ref<User>({
 
 const isValidLastNameKanji = computed(() => {
   const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
-  return regex.test(user.value.last_name_kanji)
+  return regex.test(user.last_name_kanji)
 })
 const isValidLastNameKana = computed(() => {
   const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
-  return regex.test(user.value.last_name_kana)
+  return regex.test(user.last_name_kana)
 })
 const isValidFirstNameKanji = computed(() => {
   const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
-  return regex.test(user.value.first_name_kanji)
+  return regex.test(user.first_name_kanji)
 })
 const isValidFirstNameKana = computed(() => {
   const regex = /^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]+$/
-  return regex.test(user.value.first_name_kana)
+  return regex.test(user.first_name_kana)
 })
 const isValidEmail = computed(() => {
-  return (
-    user.value.email.includes('@') && user.value.email.includes('.') && user.value.email.length > 0
-  )
+  return user.email.includes('@') && user.email.includes('.') && user.email.length > 0
 })
 
 const isValid = computed(() => {
@@ -458,16 +456,16 @@ onMounted(async () => {
 
 const getUserInfo = async (user_id: string) => {
   const res = await userService.getUser(user_id)
-  user.value = res.items[0] as User
+  Object.assign(user, res.items[0] as User)
 }
 
 const getDepartments = async () => {
   const res = await userService.getDepartments()
   departments.value = res.items
 
-  if (user.value.department_code) {
+  if (user.department_code) {
     selectedDepartment.value = departments.value.find(
-      (d) => d.department_code === user.value.department_code,
+      (d) => d.department_code === user.department_code,
     )
   }
 }
@@ -475,10 +473,8 @@ const getPositions = async () => {
   const res = await userService.getPosition()
   positions.value = res.items
 
-  if (user.value.position_code) {
-    selectedPosition.value = positions.value.find(
-      (p) => p.position_code === user.value.position_code,
-    )
+  if (user.position_code) {
+    selectedPosition.value = positions.value.find((p) => p.position_code === user.position_code)
   }
 }
 
@@ -487,11 +483,11 @@ const updateUser = async () => {
     alert('部署と役職のコードが一致しません / The department and position code do not match')
     return
   }
-  console.log('update user data: ', user.value)
+  console.log('update user data: ', user)
   console.log('selectedDepartment: ', selectedDepartment.value?.i_id)
   console.log('selectedPosition: ', selectedPosition.value?.i_id)
   const res = await userService.updateUser(
-    user.value,
+    user,
     selectedDepartment.value?.i_id || '',
     selectedDepartment.value?.department_code || '',
     selectedPosition.value?.i_id || '',

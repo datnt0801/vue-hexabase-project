@@ -393,7 +393,13 @@
                 }}</span>
               </label>
               <label class="flex items-center space-x-2">
-                <input type="checkbox" class="checkbox" v-model="user.approval_permisson" />
+                <input
+                  type="checkbox"
+                  class="checkbox"
+                  :true-value="'true'"
+                  :false-value="'false'"
+                  v-model="user.approval_permisson"
+                />
                 <span>{{ language === 'en' ? 'Set as approver' : '承認者に設定する' }}</span>
               </label>
             </div>
@@ -477,6 +483,7 @@ const selectedDepartment = computed(() => {
 })
 
 const user = reactive<User>({
+  approval_permisson: '',
   first_name_kanji: '',
   last_name_kanji: '',
   first_name_kana: '',
@@ -597,6 +604,9 @@ const registerUser = async () => {
   }
   console.log('selectedDepartment: ', selectedDepartment.value?.i_id)
   console.log('selectedPosition: ', selectedPosition.value?.i_id)
+  console.log('user: ', user)
+  console.log('user.approval_permisson: ', user.approval_permisson)
+  console.log('user.approval_permisson type: ', typeof user.approval_permisson)
   const res = await userService.createUser(
     {
       ...user,
