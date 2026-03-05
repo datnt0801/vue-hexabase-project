@@ -85,12 +85,14 @@ export const userService = {
         return_display_id: true,
       },
     )
-    return res.data
+    return res
   },
   updateUser: async (
     user: User,
     departmentId: string,
+    departmentCode: string,
     positionId: string,
+    positionCode: string,
     companyId: string,
   ) => {
     const { user_id, i_id, lookup_items, ...userWithoutLookup } = user
@@ -102,16 +104,16 @@ export const userService = {
     }>(
       `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/edit/${user.i_id}`,
       {
-        comment: 'test-comment',
         item: {
+          approval_permisson: user.approval_permisson?.toString(),
           first_name_kanji: user.first_name_kanji,
           last_name_kanji: user.last_name_kanji,
           first_name_kana: user.first_name_kana,
           last_name_kana: user.last_name_kana,
           email: user.email,
           user_name: user.email.split('@')[0],
-          position_code: user.position_code,
-          department_code: user.department_code,
+          position_code: positionCode,
+          department_code: departmentCode,
           company_code: user.company_code,
 
           department_lookup: departmentId,
@@ -127,11 +129,7 @@ export const userService = {
   deleteUser: async (user_i_id: string) => {
     const res = await api.delete(
       `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/delete/${user_i_id}`,
-      {
-        data: {
-          comment: 'test-comment',
-        },
-      },
+      { data: {} },
     )
     return res.data
   },

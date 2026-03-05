@@ -87,7 +87,6 @@ export const dashboardService = {
     const res = await api.post(
       `/applications/${import.meta.env.VITE_HEXABASE_APPLICATION_ID}/datastores/${import.meta.env.VITE_HEXABASE_DATASTORE_ID}/items/edit/${item_id}`,
       {
-        comment: 'test-comment',
         item: {
           file: [file_id],
           file_id: file_id,

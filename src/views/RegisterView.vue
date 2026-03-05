@@ -5,12 +5,13 @@
       <!-- Header -->
       <div class="font-bold text-lg">ACF BaaS Workflow</div>
       <div class="flex gap-2">
+        <button class="flex items-center gap-2" @click="toggleLanguage">
+          <span>{{ language === 'en' ? '日本語' : 'English' }}</span>
+        </button>
         <button class="flex items-center gap-2">
           <ProfileFilled /> <span>bp_acf_baas_wf_dev</span>
         </button>
-        <button class="flex items-center gap-2">
-          <LogOutIcon :size="20" /> ログアウト
-        </button>
+        <button class="flex items-center gap-2"><LogOutIcon :size="20" /> ログアウト</button>
       </div>
     </div>
     <!-- content -->
@@ -32,10 +33,7 @@
               </div>
 
               <!-- Dropdown -->
-              <ul
-                v-show="openIndex === index"
-                class="ml-4 mt-2 space-y-1 text-sm text-gray-300"
-              >
+              <ul v-show="openIndex === index" class="ml-4 mt-2 space-y-1 text-sm text-gray-300">
                 <li
                   v-for="(child, childIndex) in item.children"
                   :key="childIndex"
@@ -49,7 +47,7 @@
         </ul>
       </div>
       <!-- main content -->
-      <div class="flex-1 min-w-0 bg-cyan-50 flex flex-col">
+      <div class="flex-1 bg-[#f1f7f7] flex flex-col">
         <!-- content header -->
         <div class="h-32 bg-white shadow-md">
           <div class="flex gap-2">
@@ -62,27 +60,31 @@
           </p>
         </div>
         <!-- content body -->
-        <div class="bg-gray-100 min-h-screen p-8">
-          <div class="bg-white rounded-lg shadow p-8 max-w-5xl mx-auto">
+        <div class="bg-inherit p-8 flex-1 flex">
+          <div class="bg-white rounded-lg shadow p-8 w-full">
             <!-- title -->
             <h2 class="text-lg font-semibold mb-6">
-              基本情報
-              <span class="text-gray-500 text-sm ml-2">Basic Information</span>
+              <span class="text-gray-500 text-sm ml-2">
+                {{ language === 'en' ? 'Basic Information' : '基本情報' }}
+              </span>
             </h2>
 
             <!-- input kanji  -->
             <div class="mb-6">
               <label class="block font-medium mb-2">
-                ユーザー名
-                <span class="text-gray-500 ml-2">Kanji</span>
-                <span class="text-red-500 text-xs ml-2">必須 Required</span>
+                <span class="text-gray-500 ml-2">
+                  {{ language === 'en' ? 'Kanji' : 'ユーザー名' }}
+                </span>
+                <span class="bg-red-500 text-white text-xs ml-2 text-center px-2 rounded-sm">
+                  {{ language === 'en' ? 'Required' : '必須' }}
+                </span>
               </label>
 
-              <div class="grid grid-cols-2 gap-4">
-                <div class="">
+              <div class="grid grid-cols-2 gap-4 w-1/2">
+                <div class="flex flex-col gap-2">
                   <input
                     type="text"
-                    placeholder="姓を入力してください / Enter last name"
+                    :placeholder="language === 'en' ? 'Enter last name' : '姓を入力してください'"
                     class="input"
                     v-model="user.last_name_kanji"
                     @blur="touched.last_name_kanji = true"
@@ -98,10 +100,10 @@
                     全角のみ入力できます。
                   </p>
                 </div>
-                <div class="">
+                <div class="flex flex-col gap-2">
                   <input
                     type="text"
-                    placeholder="名を入力してください / Enter first name"
+                    :placeholder="language === 'en' ? 'Enter first name' : '名を入力してください'"
                     class="input"
                     v-model="user.first_name_kanji"
                     @blur="touched.first_name_kanji = true"
@@ -123,15 +125,23 @@
             <!-- input kana -->
             <div class="mb-6">
               <label class="block font-medium mb-2">
-                読み仮名 <span class="text-gray-500 ml-2">Kana</span>
-                <span class="text-red-500 text-xs ml-2">必須 Required</span>
+                <span class="text-gray-500 ml-2">
+                  {{ language === 'en' ? 'Kana' : '読み仮名' }}
+                </span>
+                <span class="bg-red-500 text-white text-xs ml-2 text-center px-2 rounded-sm">{{
+                  language === 'en' ? 'Required' : '必須'
+                }}</span>
               </label>
 
-              <div class="grid grid-cols-2 gap-4">
-                <div>
+              <div class="grid grid-cols-2 gap-4 w-1/2">
+                <div class="flex flex-col gap-2">
                   <input
                     type="text"
-                    placeholder="姓の読み仮名を入力してください / Enter last name (kana)"
+                    :placeholder="
+                      language === 'en'
+                        ? 'Enter last name (kana)'
+                        : '姓の読み仮名を入力してください'
+                    "
                     class="input"
                     v-model="user.last_name_kana"
                     @blur="touched.last_name_kana = true"
@@ -147,10 +157,14 @@
                     全角のみ入力できます。
                   </p>
                 </div>
-                <div>
+                <div class="flex flex-col gap-2">
                   <input
                     type="text"
-                    placeholder="名の読み仮名を入力してください / Enter first name (kana)"
+                    :placeholder="
+                      language === 'en'
+                        ? 'Enter first name (kana)'
+                        : '名の読み仮名を入力してください'
+                    "
                     class="input"
                     v-model="user.first_name_kana"
                     @blur="touched.first_name_kana = true"
@@ -170,13 +184,19 @@
             </div>
 
             <!-- Department -->
-            <div class="mb-6">
+            <!-- <div class="mb-6 w-1/4">
               <label class="block font-medium mb-2">
-                所属部署
-                <span class="text-gray-500 ml-2">Department</span>
-                <span class="text-red-500 text-xs ml-2">必須 Required</span>
+                <span class="text-gray-500 ml-2">{{
+                  language === 'en' ? 'Department' : '所属部署'
+                }}</span>
+                <span class="bg-red-500 text-white text-xs ml-2 text-center px-2 rounded-sm">{{
+                  language === 'en' ? 'Required' : '必須'
+                }}</span>
               </label>
               <select class="input" v-model="selectedDepartment">
+                <option disabled value="null">
+                  {{ language === 'en' ? 'Select department' : '所属部署を選択してください' }}
+                </option>
                 <option
                   v-for="department in departments"
                   :key="department.i_id"
@@ -185,34 +205,91 @@
                   {{ department.department_name }}
                 </option>
               </select>
+            </div> -->
+
+            <!-- A-Department -->
+            <div class="mb-6 w-1/4">
+              <label class="block font-medium mb-2">
+                <span class="text-gray-500 ml-2">
+                  {{ language === 'en' ? 'Department' : '所属部署' }}
+                </span>
+                <span class="bg-red-500 text-white text-xs ml-2 text-center px-2 rounded-sm">{{
+                  language === 'en' ? 'Required' : '必須'
+                }}</span>
+              </label>
+
+              <Select
+                style="width: 100%"
+                v-model:value="selectedDepartmentId"
+                show-arrow
+                :placeholder="
+                  language === 'en' ? 'Select department' : '所属部署を選択してください  '
+                "
+              >
+                <SelectOption
+                  v-for="department in departments"
+                  :key="department.i_id"
+                  :value="department.i_id"
+                >
+                  {{ department.department_name }}
+                </SelectOption>
+              </Select>
             </div>
 
             <!-- Position -->
-            <div class="mb-6">
+            <!-- <div class="mb-6 w-1/4">
               <label class="block font-medium mb-2">
-                役職 <span class="text-gray-500 ml-2">Position</span>
+                <span class="text-gray-500 ml-2">
+                  {{ language === 'en' ? 'Position' : '役職' }}
+                </span>
               </label>
               <select class="input" v-model="selectedPosition">
-                <option
-                  v-for="position in positions"
-                  :key="position.i_id"
-                  :value="position"
-                >
+                <option disabled value="null">
+                  {{ language === 'en' ? 'Select position' : '役職を選択してください' }}
+                </option>
+                <option v-for="position in positions" :key="position.i_id" :value="position">
                   {{ position.position_name }}
                 </option>
               </select>
+            </div> -->
+
+            <!-- A-Position -->
+            <div class="mb-6 w-1/4">
+              <label class="block font-medium mb-2">
+                <span class="text-gray-500 ml-2">
+                  {{ language === 'en' ? 'Position' : '役職' }}
+                </span>
+              </label>
+              <Select
+                style="width: 100%"
+                v-model:value="selectedPositionId"
+                :placeholder="language === 'en' ? 'Select position' : '役職を選択してください'"
+              >
+                <SelectOption
+                  v-for="position in positions"
+                  :key="position.i_id"
+                  :value="position.i_id"
+                >
+                  {{ position.position_name }}
+                </SelectOption>
+              </Select>
             </div>
 
             <!-- Email -->
-            <div class="mb-6">
+            <div class="mb-6 w-1/3">
               <label class="block font-medium mb-2">
-                メールアドレス
-                <span class="text-gray-500 ml-2">Email</span>
-                <span class="text-red-500 text-xs ml-2">必須 Required</span>
+                <span class="text-gray-500 ml-2">{{
+                  language === 'en' ? 'Email' : 'メールアドレス'
+                }}</span>
+                <span class="bg-red-500 text-white text-xs ml-2 text-center px-2 rounded-sm">{{
+                  language === 'en' ? 'Required' : '必須'
+                }}</span>
               </label>
               <input
                 type="email"
-                placeholder="メールアドレスを入力してください / Enter email"
+                :placeholder="
+                  language === 'en' ? 'Enter email' : 'メールアドレスを入力してください'
+                "
                 class="input"
                 v-model="user.email"
                 @blur="touched.email = true"
@@ -230,24 +307,42 @@
             </div>
 
             <!-- Start Date -->
-            <div class="mb-6">
+            <div class="mb-6 w-1/4">
               <label class="block font-medium mb-2">
-                利用開始日
-                <span class="text-gray-500 ml-2">Start Date</span>
-                <span class="text-red-500 text-xs ml-2">必須 Required</span>
+                <span class="text-gray-500 ml-2">
+                  {{ language === 'en' ? 'Start Date' : '利用開始日' }}
+                </span>
+                <span class="bg-red-500 text-white text-xs ml-2 text-center px-2 rounded-sm">{{
+                  language === 'en' ? 'Required' : '必須'
+                }}</span>
               </label>
-              <input type="date" class="input" />
+              <!-- <input
+                type="date"
+                class="input"
+                :placeholder="
+                  language === 'en' ? 'Enter start date' : '利用開始日を入力してください'
+                "
+              /> -->
+              <DatePicker
+                style="width: 100%"
+                :placeholder="
+                  language === 'en' ? 'Enter start date' : '利用開始日を入力してください'
+                "
+              />
             </div>
 
             <!-- Staff Code -->
-            <div class="mb-6">
+            <div class="mb-6 w-1/4">
               <label class="block font-medium mb-2">
-                スタッフコード
-                <span class="text-gray-500 ml-2">Staff Code</span>
+                <span class="text-gray-500 ml-2">{{
+                  language === 'en' ? 'Staff Code' : 'スタッフコード'
+                }}</span>
               </label>
               <input
                 type="text"
-                placeholder="スタッフコードを入力してください / Enter staff code"
+                :placeholder="
+                  language === 'en' ? 'Enter staff code' : 'スタッフコードを入力してください'
+                "
                 class="input"
               />
             </div>
@@ -255,64 +350,77 @@
             <!-- Note -->
             <div class="mb-10">
               <label class="block font-medium mb-2">
-                備考 <span class="text-gray-500 ml-2">Note</span>
+                <span class="text-gray-500 ml-2">
+                  {{ language === 'en' ? 'Note' : '備考' }}
+                </span>
               </label>
               <textarea
                 rows="4"
-                placeholder="備考を記載してください / Enter note"
+                :placeholder="language === 'en' ? 'Enter note' : '備考を記載してください'"
                 class="input"
               ></textarea>
             </div>
 
             <!-- System Settings -->
-            <h2 class="text-lg font-semibold mb-6">
-              システム情報設定
-              <span class="text-gray-500 text-sm ml-2">System Settings</span>
+            <h2 class="text-lg font-semibold mb-6 border-b border-gray-300">
+              <span class="text-gray-500 text-sm ml-2">{{
+                language === 'en' ? 'System Settings' : 'システム情報設定'
+              }}</span>
             </h2>
 
             <!-- Permission -->
-            <div class="mb-6">
+            <div class="mb-6 w-1/4">
               <label class="block font-medium mb-2">
-                権限
-                <span class="text-gray-500 ml-2">Permission</span>
-                <span class="text-red-500 text-xs ml-2">必須 Required</span>
+                <span class="text-gray-500 ml-2">{{
+                  language === 'en' ? 'Permission' : '権限'
+                }}</span>
+                <span class="bg-red-500 text-white text-xs ml-2 text-center px-2 rounded-sm">{{
+                  language === 'en' ? 'Required' : '必須'
+                }}</span>
               </label>
               <select class="input">
-                <option>権限を選択してください / Select permission</option>
+                <option>
+                  {{ language === 'en' ? 'Select permission' : '権限を選択してください' }}
+                </option>
               </select>
             </div>
 
             <!-- Approval Permission -->
-            <div class="mb-6">
+            <div class="mb-6 w-1/4">
               <label class="block font-medium mb-2">
-                承認権限
-                <span class="text-gray-500 ml-2">Approval Permission</span>
+                <span class="text-gray-500 ml-2">{{
+                  language === 'en' ? 'Approval Permission' : '承認権限'
+                }}</span>
               </label>
               <label class="flex items-center space-x-2">
-                <input type="checkbox" class="checkbox" />
-                <span>承認者に設定する / Set as approver</span>
+                <input type="checkbox" class="checkbox" v-model="user.approval_permisson" />
+                <span>{{ language === 'en' ? 'Set as approver' : '承認者に設定する' }}</span>
               </label>
             </div>
 
             <!-- Proxy Permission -->
-            <div class="mb-10">
+            <div class="mb-10 w-1/4">
               <label class="block font-medium mb-2">
-                代理権限
-                <span class="text-gray-500 ml-2">Proxy Permission</span>
+                <span class="text-gray-500 ml-2">{{
+                  language === 'en' ? 'Proxy Permission' : '代理権限'
+                }}</span>
               </label>
               <div class="space-y-2">
                 <label class="flex items-center space-x-2">
                   <input type="checkbox" class="checkbox" />
-                  <span
-                    >所属部署スタッフの代理申請を可能にする / Allow proxy
-                    application</span
-                  >
+                  <span>{{
+                    language === 'en'
+                      ? 'Allow proxy application'
+                      : '所属部署スタッフの代理申請を可能にする'
+                  }}</span>
                 </label>
                 <label class="flex items-center space-x-2">
                   <input type="checkbox" class="checkbox" />
-                  <span
-                    >所属部署スタッフの代理承認を可能にする / Allow proxy approval</span
-                  >
+                  <span>{{
+                    language === 'en'
+                      ? 'Allow proxy approval'
+                      : '所属部署スタッフの代理承認を可能にする'
+                  }}</span>
                 </label>
               </div>
             </div>
@@ -320,19 +428,19 @@
             <!-- Buttons -->
             <div class="flex justify-center gap-6">
               <button
-                class="px-6 py-2 border border-blue-500 text-blue-500 rounded hover:bg-blue-50"
+                class="px-6 py-2 border-2 border-blue-500 text-blue-500 rounded-md hover:bg-blue-50"
                 @click="handleCancel"
               >
-                キャンセル Cancel
+                {{ language === 'en' ? 'Cancel' : 'キャンセル' }}
               </button>
               <button
                 @click="registerUser"
-                class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                class="px-6 py-2 border-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                 :class="{
                   'bg-gray-300 cursor-not-allowed': !isValid,
                 }"
               >
-                登録する Register
+                {{ language === 'en' ? 'Register' : '登録する' }}
               </button>
             </div>
           </div>
@@ -343,6 +451,7 @@
 </template>
 
 <script setup lang="ts">
+import { DatePicker, Select, SelectOption } from 'ant-design-vue'
 import router from '@/router'
 import { userService } from '@/services/userService'
 import type { Department, Position, User } from '@/shared/type'
@@ -351,8 +460,21 @@ import { LogOutIcon } from 'lucide-vue-next'
 import { ref, reactive, onMounted, computed } from 'vue'
 const departments = ref<Department[]>([])
 const positions = ref<Position[]>([])
-const selectedPosition = ref<Position>()
-const selectedDepartment = ref<Department>()
+// const selectedPosition = ref<Position | null>(null)
+const selectedPositionId = ref<string>('')
+// const selectedDepartment = ref<Department | null>(null)
+const selectedDepartmentId = ref<string>('')
+const language = ref('en')
+const toggleLanguage = () => {
+  language.value = language.value === 'en' ? 'ja' : 'en'
+}
+
+const selectedPosition = computed(() => {
+  return positions.value.find((position) => position.i_id === selectedPositionId.value)
+})
+const selectedDepartment = computed(() => {
+  return departments.value.find((department) => department.i_id === selectedDepartmentId.value)
+})
 
 const user = reactive<User>({
   first_name_kanji: '',
@@ -469,16 +591,12 @@ const getPositions = async () => {
 }
 
 const registerUser = async () => {
-  if (
-    selectedPosition.value?.department_code !== selectedDepartment.value?.department_code
-  ) {
-    alert(
-      '部署と役職のコードが一致しません / The department and position code do not match',
-    )
+  if (selectedPosition.value?.department_code !== selectedDepartment.value?.department_code) {
+    alert('部署と役職のコードが一致しません / The department and position code do not match')
     return
   }
-  // console.log('selectedDepartment: ', selectedDepartment.value?.i_id)
-  // console.log('selectedPosition: ', selectedPosition.value?.i_id)
+  console.log('selectedDepartment: ', selectedDepartment.value?.i_id)
+  console.log('selectedPosition: ', selectedPosition.value?.i_id)
   const res = await userService.createUser(
     {
       ...user,
@@ -497,14 +615,14 @@ const registerUser = async () => {
 const addUser = async () => {
   console.log('user to add: ', user)
   const res = await userService.addUser(user)
-  console.log('add user: ', res)
-  if (res.added) {
-    alert('ユーザーを登録しました / The user has been registered successfully')
-    router.push('/react')
-  }
-  if (res.exists) {
-    alert('ユーザーは既に存在します / The user already exists')
-  }
+  console.log('add user response: ', res)
+  // if (res.added) {
+  //   alert('ユーザーを登録しました / The user has been registered successfully')
+  //   router.push('/react')
+  // }
+  // if (res.exists) {
+  //   alert('ユーザーは既に存在します / The user already exists')
+  // }
 }
 </script>
 

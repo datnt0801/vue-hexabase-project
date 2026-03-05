@@ -14,6 +14,7 @@ export type Position = {
 export type User = {
   user_id?: number
   i_id?: string
+  approval_permisson?: string
   first_name_kanji: string
   last_name_kanji: string
   first_name_kana: string

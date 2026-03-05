@@ -8,9 +8,7 @@
         <button class="flex items-center gap-2">
           <ProfileFilled /> <span>bp_acf_baas_wf_dev</span>
         </button>
-        <button class="flex items-center gap-2">
-          <LogOutIcon :size="20" /> ログアウト
-        </button>
+        <button class="flex items-center gap-2"><LogOutIcon :size="20" /> ログアウト</button>
       </div>
     </div>
     <!-- content -->
@@ -32,10 +30,7 @@
               </div>
 
               <!-- Dropdown -->
-              <ul
-                v-show="openIndex === index"
-                class="ml-4 mt-2 space-y-1 text-sm text-gray-300"
-              >
+              <ul v-show="openIndex === index" class="ml-4 mt-2 space-y-1 text-sm text-gray-300">
                 <li
                   v-for="(child, childIndex) in item.children"
                   :key="childIndex"
@@ -49,7 +44,7 @@
         </ul>
       </div>
       <!-- main content -->
-      <div class="flex-1 min-w-0 bg-cyan-50 flex flex-col">
+      <div class="flex-1 min-w-0 bg-[#f1f7f7] flex flex-col">
         <!-- content header -->
         <div class="h-32 bg-white shadow-md">
           <div class="flex gap-2">
@@ -62,7 +57,7 @@
           </p>
         </div>
         <!-- content body -->
-        <div class="bg-gray-100 min-h-screen p-8">
+        <div class="bg-inherit p-8 flex-1 flex">
           <div class="bg-white rounded-lg shadow p-8 max-w-5xl mx-auto">
             <!-- title -->
             <h2 class="text-lg font-semibold mb-6">
@@ -193,11 +188,7 @@
                 役職 <span class="text-gray-500 ml-2">Position</span>
               </label>
               <select class="input" v-model="selectedPosition">
-                <option
-                  v-for="position in positions"
-                  :key="position.i_id"
-                  :value="position"
-                >
+                <option v-for="position in positions" :key="position.i_id" :value="position">
                   {{ position.position_name }}
                 </option>
               </select>
@@ -289,7 +280,7 @@
                 <span class="text-gray-500 ml-2">Approval Permission</span>
               </label>
               <label class="flex items-center space-x-2">
-                <input type="checkbox" class="checkbox" />
+                <input type="checkbox" class="checkbox" v-model="user.approval_permisson" />
                 <span>承認者に設定する / Set as approver</span>
               </label>
             </div>
@@ -303,16 +294,11 @@
               <div class="space-y-2">
                 <label class="flex items-center space-x-2">
                   <input type="checkbox" class="checkbox" />
-                  <span
-                    >所属部署スタッフの代理申請を可能にする / Allow proxy
-                    application</span
-                  >
+                  <span>所属部署スタッフの代理申請を可能にする / Allow proxy application</span>
                 </label>
                 <label class="flex items-center space-x-2">
                   <input type="checkbox" class="checkbox" />
-                  <span
-                    >所属部署スタッフの代理承認を可能にする / Allow proxy approval</span
-                  >
+                  <span>所属部署スタッフの代理承認を可能にする / Allow proxy approval</span>
                 </label>
               </div>
             </div>
@@ -358,6 +344,7 @@ const user_id = ref<string>('')
 const route = useRoute()
 
 const user = ref<User>({
+  approval_permisson: '',
   first_name_kanji: '',
   last_name_kanji: '',
   first_name_kana: '',
@@ -398,9 +385,7 @@ const isValidFirstNameKana = computed(() => {
 })
 const isValidEmail = computed(() => {
   return (
-    user.value.email.includes('@') &&
-    user.value.email.includes('.') &&
-    user.value.email.length > 0
+    user.value.email.includes('@') && user.value.email.includes('.') && user.value.email.length > 0
   )
 })
 
@@ -459,21 +444,21 @@ const handleCancel = () => {
   router.push('/react')
 }
 
-onMounted(() => {
-  getDepartments()
-  getPositions()
+onMounted(async () => {
   user_id.value = route.params.user_id as string
-  console.log('user_id: ', user_id.value)
   if (user_id.value) {
-    getUserInfo(user_id.value)
+    await getUserInfo(user_id.value)
+    Promise.all([getDepartments(), getPositions()])
+      .then(() => {})
+      .catch((error) => {
+        console.error('promise error: ', error)
+      })
   }
 })
 
 const getUserInfo = async (user_id: string) => {
   const res = await userService.getUser(user_id)
-  console.log('user: ', res)
   user.value = res.items[0] as User
-  console.log('user: ', user.value)
 }
 
 const getDepartments = async () => {
@@ -498,30 +483,28 @@ const getPositions = async () => {
 }
 
 const updateUser = async () => {
-  if (
-    selectedPosition.value?.department_code !== selectedDepartment.value?.department_code
-  ) {
-    alert(
-      '部署と役職のコードが一致しません / The department and position code do not match',
-    )
+  if (selectedPosition.value?.department_code !== selectedDepartment.value?.department_code) {
+    alert('部署と役職のコードが一致しません / The department and position code do not match')
     return
   }
-  console.log('update user: ', user.value)
+  console.log('update user data: ', user.value)
   console.log('selectedDepartment: ', selectedDepartment.value?.i_id)
   console.log('selectedPosition: ', selectedPosition.value?.i_id)
   const res = await userService.updateUser(
     user.value,
     selectedDepartment.value?.i_id || '',
+    selectedDepartment.value?.department_code || '',
     selectedPosition.value?.i_id || '',
+    selectedPosition.value?.position_code || '',
     '69a504f0c748fcad046f85e5', //company i_id
   )
-  console.log('update user: ', res)
-  if (res.itemHistory?.IsChanged === true) {
-    router.push('/react')
-    alert('更新しました')
-  } else {
-    alert('更新に失敗しました')
-  }
+  console.log('update user response: ', res)
+  // if (res.itemHistory?.IsChanged === true) {
+  //   router.push('/react')
+  //   alert('更新しました / Updated successfully')
+  // } else {
+  //   alert('更新に失敗しました / Failed to update')
+  // }
 }
 </script>
 

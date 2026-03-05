@@ -1,10 +1,14 @@
 <template>
   <!-- screen -->
   <div class="h-full w-full flex flex-col">
+    <div
+      v-if="isLoading"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-white opacity-50"
+    >
+      <Spin size="small" tip="Loading..."> </Spin>
+    </div>
     <div v-if="showDeleteModal">
-      <div
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
-      >
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
         <div class="bg-white rounded-lg shadow-lg w-full max-w-md relative">
           <!-- Close button at top right -->
           <button
@@ -49,9 +53,7 @@
         <button class="flex items-center gap-2">
           <ProfileFilled /> <span>bp_acf_baas_wf_dev</span>
         </button>
-        <button class="flex items-center gap-2">
-          <LogOutIcon :size="20" /> ログアウト
-        </button>
+        <button class="flex items-center gap-2"><LogOutIcon :size="20" /> ログアウト</button>
       </div>
     </div>
     <!-- content -->
@@ -73,10 +75,7 @@
               </div>
 
               <!-- Dropdown -->
-              <ul
-                v-show="openIndex === index"
-                class="ml-4 mt-2 space-y-1 text-sm text-gray-300"
-              >
+              <ul v-show="openIndex === index" class="ml-4 mt-2 space-y-1 text-sm text-gray-300">
                 <li
                   v-for="(child, childIndex) in item.children"
                   :key="childIndex"
@@ -90,7 +89,7 @@
         </ul>
       </div>
       <!-- main content -->
-      <div class="flex-1 min-w-0 bg-cyan-50 flex flex-col">
+      <div class="flex-1 min-w-0 bg-[#f1f7f7] flex flex-col">
         <!-- content header -->
         <div class="h-32 bg-white shadow-md">
           <div class="flex gap-2">
@@ -103,7 +102,7 @@
         <!-- content body -->
         <div class="flex-1 min-w-0 m-4 bg-white shadow-md flex flex-col">
           <!-- table filter -->
-          <div class="w-full h-1/ flex flex-col gap-2">
+          <div class="w-full flex flex-col gap-2">
             <div class="m-4"><b>組織マスタ管理</b></div>
             <div class="mx-4 flex gap-2">
               <input
@@ -122,20 +121,18 @@
             <div class="flex self-end mx-4">
               <button
                 @click="handleClickRegister"
-                class="bg-blue-600 rounded-md px-3 py-2 text-white"
+                class="bg-blue-600 rounded-md px-5 py-1 text-white"
               >
                 登録する
               </button>
             </div>
-            <div class="mx-4 text-sm">
-              <p>検索結果: {{ filteredUsers.length }}件</p>
-            </div>
+            <p class="mx-4 text-xs">検索結果: {{ filteredUsers.length }}件</p>
           </div>
           <!-- table -->
           <div class="flex-1 min-w-0">
-            <div class="p-6 h-full">
+            <div class="p-2 h-full">
               <!-- scroll container -->
-              <div class="overflow-auto max-h-[500px]">
+              <div class="overflow-auto">
                 <table class="min-w-max rounded-lg w-full text-sm">
                   <!-- HEADER -->
                   <thead class="bg-gray-100 sticky top-0 z-10">
@@ -181,6 +178,9 @@
                       </th>
                       <th class="px-4 py-2 text-left border-b">
                         {{ language === 'en' ? 'Company Name' : '会社名' }}
+                      </th>
+                      <th class="px-4 py-2 text-left border-b">
+                        {{ language === 'en' ? 'Approval Permission' : '承認権限' }}
                       </th>
                       <th class="px-4 py-2 text-left border-b">
                         {{ language === 'en' ? 'Action' : '操作' }}
@@ -234,7 +234,15 @@
                       <td class="px-4 py-2 border-b">
                         {{ user.lookup_items?.company_lookup?.company_name || '' }}
                       </td>
-
+                      <td class="px-4 py-2 border-b text-center">
+                        {{ user.approval_permisson === 'true' ? 'Yes' : 'No' }}
+                        <!-- {{
+                          console.log(
+                            'user.approval_permisson: ',
+                            user.approval_permisson,
+                          )
+                        }} -->
+                      </td>
                       <td class="px-4 py-2 border-b flex gap-2">
                         <button @click="handleClickEdit(user)">
                           <svg
@@ -278,9 +286,7 @@
                     </tr>
 
                     <tr v-if="users.length === 0">
-                      <td colspan="4" class="text-center py-4 text-gray-500">
-                        No data available
-                      </td>
+                      <td colspan="4" class="text-center py-4 text-gray-500">No data available</td>
                     </tr>
                   </tbody>
                 </table>
@@ -306,6 +312,7 @@ import { ProfileFilled } from '@ant-design/icons-vue'
 import { LogOutIcon } from 'lucide-vue-next'
 import { ref, computed, onMounted } from 'vue'
 import type { User } from '@/shared/type'
+import { Spin } from 'ant-design-vue'
 
 const sidebar_data = ref([
   {
@@ -341,6 +348,7 @@ const selectedUser = ref<User | null>(null)
 const searchKeyword = ref('')
 const showDeleteModal = ref(false)
 const language = ref('en')
+const isLoading = ref(false)
 
 const toggleLanguage = () => {
   language.value = language.value === 'en' ? 'ja' : 'en'
@@ -351,9 +359,10 @@ const toggleMenu = (index: number) => {
 }
 
 const getData = async () => {
+  isLoading.value = true
   const data = await userService.getUsers()
   users.value = data.items
-  console.log('get user data:', users)
+  isLoading.value = false
 }
 
 onMounted(() => {
@@ -369,16 +378,13 @@ const handleClickRegister = () => {
 }
 
 const handleClickEdit = (user: User) => {
-  console.log('handleClickEdit: ', user)
   selectedUser.value = user
 
   router.push(`/user/edit/${selectedUser.value?.user_id}`)
 }
 
 const handleClickDelete = (user: User) => {
-  console.log('handleClickDelete: ', user)
   selectedUser.value = user
-  console.log('selectedUser: ', selectedUser.value?.i_id)
   showDeleteModal.value = true
 }
 
@@ -419,11 +425,8 @@ const closeDeleteModal = () => {
 
 const confirmDelete = async () => {
   if (!selectedUser.value?.i_id) {
-    console.error('confirmDelete called without a valid selectedUser.i_id')
     return
   }
-
-  console.log('confirmDelete: ', selectedUser.value.i_id)
 
   const res = await userService.deleteUser(selectedUser.value.i_id)
   console.log('delete user: ', res)
