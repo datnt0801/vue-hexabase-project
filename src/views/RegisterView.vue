@@ -71,7 +71,7 @@
 
             <!-- input kanji  -->
             <div class="mb-6">
-              <label class="block font-medium mb-2">
+              <label for="kanji-input" class="block font-medium mb-2">
                 <span class="text-gray-500 ml-2">
                   {{ language === 'en' ? 'Kanji' : 'ユーザー名' }}
                 </span>
@@ -79,52 +79,57 @@
                   {{ language === 'en' ? 'Required' : '必須' }}
                 </span>
               </label>
-
+              <!-- last name kanji -->
               <div class="grid grid-cols-2 gap-4 w-1/2">
-                <div class="flex flex-col gap-2">
+                <div class="flex flex-col gap-2 relative">
                   <input
+                    id="kanji-input"
                     type="text"
                     :placeholder="language === 'en' ? 'Enter last name' : '姓を入力してください'"
                     class="input"
                     v-model="user.last_name_kanji"
                     @blur="touched.last_name_kanji = true"
                   />
-                  <p
-                    class="text-red-500 text-xs ml-2 mt-2"
+                  <div
+                    class="error absolute top-full left-0 flex items-center gap-2 text-xs mt-1 ml-1"
                     v-show="touched.last_name_kanji && !isValidLastNameKanji"
-                    :class="{
-                      invisible: isValidLastNameKanji && user.last_name_kanji,
-                      block: !isValidLastNameKanji && user.last_name_kanji,
-                    }"
                   >
-                    全角のみ入力できます。
-                  </p>
+                    <p
+                      class="rounded-full bg-red-500 text-white text-xs text-center px-2 w-4 h-4 flex items-center justify-center"
+                    >
+                      !
+                    </p>
+                    <p class="text-xs">全角のみ入力できます。</p>
+                  </div>
                 </div>
-                <div class="flex flex-col gap-2">
+                <!-- first name kanji -->
+                <div class="flex flex-col gap-2 relative">
                   <input
+                    id="kanji-input"
                     type="text"
                     :placeholder="language === 'en' ? 'Enter first name' : '名を入力してください'"
                     class="input"
                     v-model="user.first_name_kanji"
                     @blur="touched.first_name_kanji = true"
                   />
-                  <p
-                    class="text-red-500 text-xs ml-2 mt-2"
+                  <div
+                    class="error absolute top-full left-0 flex items-center gap-2 text-xs mt-1 ml-1"
                     v-show="touched.first_name_kanji && !isValidFirstNameKanji"
-                    :class="{
-                      hidden: isValidFirstNameKanji && user.first_name_kanji,
-                      block: !isValidFirstNameKanji && user.first_name_kanji,
-                    }"
                   >
-                    全角のみ入力できます。
-                  </p>
+                    <p
+                      class="rounded-full bg-red-500 text-white text-xs text-center px-2 w-4 h-4 flex items-center justify-center"
+                    >
+                      !
+                    </p>
+                    <p class="text-xs">全角のみ入力できます。</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- input kana -->
             <div class="mb-6">
-              <label class="block font-medium mb-2">
+              <label for="kana-input" class="block font-medium mb-2">
                 <span class="text-gray-500 ml-2">
                   {{ language === 'en' ? 'Kana' : '読み仮名' }}
                 </span>
@@ -134,8 +139,9 @@
               </label>
 
               <div class="grid grid-cols-2 gap-4 w-1/2">
-                <div class="flex flex-col gap-2">
+                <div class="flex flex-col gap-2 relative">
                   <input
+                    id="kana-input"
                     type="text"
                     :placeholder="
                       language === 'en'
@@ -146,19 +152,21 @@
                     v-model="user.last_name_kana"
                     @blur="touched.last_name_kana = true"
                   />
-                  <p
-                    class="text-red-500 text-xs ml-2 mt-2"
+                  <div
+                    class="error absolute top-full left-0 flex items-center gap-2 text-xs mt-1 ml-1"
                     v-show="touched.last_name_kana && !isValidLastNameKana"
-                    :class="{
-                      hidden: isValidLastNameKana && user.last_name_kana,
-                      block: !isValidLastNameKana && user.last_name_kana,
-                    }"
                   >
-                    全角のみ入力できます。
-                  </p>
+                    <p
+                      class="rounded-full bg-red-500 text-white text-xs text-center px-2 w-4 h-4 flex items-center justify-center"
+                    >
+                      !
+                    </p>
+                    <p class="text-xs">全角のみ入力できます。</p>
+                  </div>
                 </div>
-                <div class="flex flex-col gap-2">
+                <div class="flex flex-col gap-2 relative">
                   <input
+                    id="kana-input"
                     type="text"
                     :placeholder="
                       language === 'en'
@@ -169,16 +177,17 @@
                     v-model="user.first_name_kana"
                     @blur="touched.first_name_kana = true"
                   />
-                  <p
-                    class="text-red-500 text-xs ml-2 mt-2"
+                  <div
+                    class="error absolute top-full left-0 flex items-center gap-2 text-xs mt-1 ml-1"
                     v-show="touched.first_name_kana && !isValidFirstNameKana"
-                    :class="{
-                      hidden: isValidFirstNameKana && user.first_name_kana,
-                      block: !isValidFirstNameKana && user.first_name_kana,
-                    }"
                   >
-                    全角のみ入力できます。
-                  </p>
+                    <p
+                      class="rounded-full bg-red-500 text-white text-xs text-center px-2 w-4 h-4 flex items-center justify-center"
+                    >
+                      !
+                    </p>
+                    <p class="text-xs">全角のみ入力できます。</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -643,5 +652,24 @@ const addUser = async () => {
 
 .checkbox {
   @apply w-4 h-4;
+}
+
+.error {
+  color: #ff4d4f;
+  transform-origin: center;
+  animation: showError 0.25s ease;
+  min-height: 16px;
+}
+
+@keyframes showError {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
 }
 </style>
