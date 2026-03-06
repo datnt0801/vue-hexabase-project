@@ -29,7 +29,10 @@
           </button>
         </div>
         <div class="flex self-end mx-4">
-          <button @click="handleClickRegister" class="bg-blue-600 rounded-md px-5 py-1 text-white">
+          <button
+            @click="emit('on-click-create')"
+            class="bg-blue-600 rounded-md px-5 py-1 text-white"
+          >
             登録する
           </button>
         </div>
@@ -207,10 +210,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import type { User } from '@/shared/type'
-import { useRouter } from 'vue-router'
 const sortAsc = ref(true)
 const searchKeyword = ref('')
-const router = useRouter()
 
 const props = defineProps<{
   language: string
@@ -219,7 +220,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'on-click-search'): void
-  (e: 'on-click-register'): void
+  (e: 'on-click-create'): void
   (e: 'on-click-edit', user: User): void
   (e: 'on-click-delete', user: User): void
   (e: 'on-click-show-delete-confirm-modal'): void
@@ -251,9 +252,5 @@ const sortedUsers = computed(() => {
 
 const toggleSort = () => {
   sortAsc.value = !sortAsc.value
-}
-
-const handleClickRegister = () => {
-  router.push('/user/register')
 }
 </script>

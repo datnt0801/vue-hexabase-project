@@ -475,9 +475,7 @@ import { LogOutIcon } from 'lucide-vue-next'
 import { ref, reactive, onMounted, computed } from 'vue'
 const departments = ref<Department[]>([])
 const positions = ref<Position[]>([])
-// const selectedPosition = ref<Position | null>(null)
 const selectedPositionId = ref<string>('')
-// const selectedDepartment = ref<Department | null>(null)
 const selectedDepartmentId = ref<string>('')
 const language = ref('en')
 const toggleLanguage = () => {
@@ -587,7 +585,7 @@ const toggleMenu = (index: number) => {
 }
 
 const handleCancel = () => {
-  router.push('/react')
+  router.push('/users')
 }
 
 onMounted(() => {
@@ -598,12 +596,10 @@ onMounted(() => {
 const getDepartments = async () => {
   const res = await userService.getDepartments()
   departments.value = res.items
-  console.log('departments: ', departments)
 }
 const getPositions = async () => {
   const res = await userService.getPosition()
   positions.value = res.items
-  console.log('positions: ', positions)
 }
 
 const registerUser = async () => {
@@ -644,7 +640,6 @@ const addUser = async () => {
   // }
 }
 </script>
-
 <style scoped>
 .input {
   @apply w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500;

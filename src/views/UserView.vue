@@ -23,13 +23,17 @@
       <!-- End Sidebar -->
       <!-- Start Main Content -->
       <UserViewList
-        v-if="showUserList"
+        v-if="route.name === 'users'"
         :language="language"
         :users="users"
         @on-click-edit="handleClickEdit"
         @on-click-delete="handleClickDelete"
+        @on-click-create="handleClickCreate"
       />
-      <UserViewForm v-else :language="language" />
+      <UserViewForm
+        v-else-if="route.name === 'users-new' || route.name === 'users-edit'"
+        :language="language"
+      />
     </div>
     <!-- End Content -->
   </div>
@@ -47,7 +51,8 @@ import UserViewHeader from '@/components/UserViewHeader.vue'
 import UserViewSidebar from '@/components/UserViewSidebar.vue'
 import UserViewList from '@/components/UserViewList.vue'
 import UserViewForm from '@/components/UserViewForm.vue'
-
+import { useRoute } from 'vue-router'
+const route = useRoute()
 const sidebar_data = ref([
   {
     title: '申請する',
@@ -81,23 +86,23 @@ const selectedUser = ref<User | null>(null)
 const showDeleteModal = ref(false)
 const language = ref('en')
 const isLoading = ref<boolean>(false)
-const showUserList = ref<boolean>(true)
 
 onMounted(() => {
   getData()
+  language.value = localStorage.getItem('language') || 'en'
+  // có thể dùng global state để lưu language
+  // const languageStore = useLanguageStore()
+  // languageStore.setLanguage(language.value)
 })
 
 const toggleLanguage = () => {
   language.value = language.value === 'en' ? 'ja' : 'en'
+  localStorage.setItem('language', language.value)
 }
 
 const toggleMenu = (index: number) => {
   openIndex.value = openIndex.value === index ? null : index
 }
-
-// const toggleUserList = () => {
-//   showUserList.value = !showUserList.value
-// }
 
 const getData = async () => {
   isLoading.value = true
@@ -107,7 +112,11 @@ const getData = async () => {
 }
 
 const handleClickEdit = (user: User) => {
-  router.push(`/user/edit/${user.user_id}`)
+  router.push(`/users/${user.user_id}/edit`)
+}
+
+const handleClickCreate = () => {
+  router.push('/users/new')
 }
 
 const handleClickDelete = (user: User) => {

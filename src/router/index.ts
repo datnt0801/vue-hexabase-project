@@ -37,29 +37,29 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     // -------------------------------------------------------------
-    // demo user
+    // demo user code cũ
     // -------------------------------------------------------------
-    {
-      path: '/react',
-      name: 'react',
-      component: () => {
-        return import('../views/UserView.vue')
-      },
-    },
-    {
-      path: '/user/register',
-      name: 'user-register',
-      component: () => {
-        return import('../views/RegisterView.vue')
-      },
-    },
-    {
-      path: '/user/edit/:user_id',
-      name: 'user-edit',
-      component: () => {
-        return import('../views/EditView.vue')
-      },
-    },
+    // {
+    //   path: '/react',
+    //   name: 'react',
+    //   component: () => {
+    //     return import('../views/UserView.vue')
+    //   },
+    // },
+    // {
+    //   path: '/user/register',
+    //   name: 'user-register',
+    //   component: () => {
+    //     return import('../views/RegisterView.vue')
+    //   },
+    // },
+    // {
+    //   path: '/user/edit/:user_id',
+    //   name: 'user-edit',
+    //   component: () => {
+    //     return import('../views/EditView.vue')
+    //   },
+    // },
     // -------------------------------------------------------------
     // test login user
     // -------------------------------------------------------------
@@ -75,33 +75,26 @@ const router = createRouter({
     // -------------------------------------------------------------
     {
       path: '/users',
-      name: 'users',
       component: UserLayout,
       children: [
         {
           path: '',
-          component: () => {
-            return import('../views/UserView.vue')
-          },
-          children: [
-            {
-              path: 'new',
-              name: 'users-new',
-              component: () => {
-                return import('../views/UserView.vue')
-              },
-            },
-            {
-              path: ':user_id/edit',
-              name: 'users-edit',
-              component: () => {
-                return import('../views/EditView.vue')
-              },
-            },
-          ],
+          name: 'users',
+          component: () => import('../views/UserView.vue'),
+        },
+        {
+          path: 'new',
+          name: 'users-new',
+          component: () => import('../views/UserView.vue'),
+        },
+        {
+          path: ':user_id/edit',
+          name: 'users-edit',
+          component: () => import('../views/UserView.vue'),
         },
       ],
     },
+    // -------------------------------------------------------------
   ],
 })
 
