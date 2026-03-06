@@ -1,356 +1,135 @@
-<!-- <template>
+<template>
+  <!-- screen -->
   <div class="h-full w-full flex flex-col">
-    <div class="h-12 bg-gray-800">abc</div>
+    <AppLoading :isLoading="isLoading" />
+    <DeleteUserConfirmModal
+      v-if="showDeleteModal"
+      :selectedUser="selectedUser"
+      @on-click-close="closeDeleteModal"
+      @on-click-confirm="confirmDelete"
+    />
+    <!-- Start Header -->
+    <UserViewHeader :language="language" @on-click-toggle-language="toggleLanguage" />
+    <!-- End Header -->
+    <!-- Start Content -->
     <div class="flex flex-1">
-      <div class="w-64 bg-gray-700">sidebar</div>
-      <div class="flex-1 bg-gray-600">content</div>
+      <!-- Start Sidebar -->
+      <UserViewSidebar
+        :sidebar_data="sidebar_data"
+        :openIndex="openIndex"
+        @on-click-toggle-menu="toggleMenu"
+      />
+
+      <!-- End Sidebar -->
+      <!-- Start Main Content -->
+      <UserViewList
+        v-if="showUserList"
+        :language="language"
+        :users="users"
+        @on-click-edit="handleClickEdit"
+        @on-click-delete="handleClickDelete"
+      />
+      <UserViewForm v-else :language="language" />
     </div>
+    <!-- End Content -->
   </div>
+  <!-- End Screen -->
 </template>
 
-<script setup lang="ts"></script> -->
-
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import type { TableColumnsType } from 'ant-design-vue'
-// import { UserOutlined, MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons-vue'
+import router from '@/router'
+import { userService } from '@/services/userService'
+import { ref, onMounted } from 'vue'
+import type { User } from '@/shared/type'
+import AppLoading from '@/components/AppLoading.vue'
+import DeleteUserConfirmModal from '@/components/DeleteUserConfirmModal.vue'
+import UserViewHeader from '@/components/UserViewHeader.vue'
+import UserViewSidebar from '@/components/UserViewSidebar.vue'
+import UserViewList from '@/components/UserViewList.vue'
+import UserViewForm from '@/components/UserViewForm.vue'
 
-/* ==============================
-   Layout
-============================== */
-const collapsed = ref(false)
-
-/* ==============================
-   Search State
-============================== */
-const searchKeyword = ref('')
-
-/* ==============================
-   Table
-============================== */
-const loading = ref(false)
-
-const columns: TableColumnsType = [
-  { title: 'userId', dataIndex: 'userId' },
-  { title: 'firstNameKana', dataIndex: 'firstNameKana' },
-  { title: 'lastNameKana', dataIndex: 'lastNameKana' },
-  { title: 'firstName', dataIndex: 'firstName' },
-  { title: 'lastName', dataIndex: 'lastName' },
-  { title: 'deptCode', dataIndex: 'deptCode' },
-  { title: 'deptName', dataIndex: 'deptName' },
-  { title: 'roleCode', dataIndex: 'roleCode' },
-  { title: 'roleName', dataIndex: 'roleName' },
-  { title: 'email', dataIndex: 'email' },
-]
-
-const dataSource = ref([
+const sidebar_data = ref([
   {
-    key: 1,
-    userId: 'bp_acf_saas_wf_dev',
-    firstNameKana: 'sato',
-    lastNameKana: 'sato',
-    firstName: 'sato',
-    lastName: 'sato',
-    deptCode: 'DPT02',
-    deptName: 'Test 1234',
-    roleCode: 'P0222',
-    roleName: 'Admin',
-    email: 'test@gmail.com',
+    title: '申請する',
+    children: ['申請書の新規作成', '申請済み一覧', '完了した申請一覧', 'ファイル一覧'],
   },
   {
-    key: 2,
-    userId: 'Test-lamEmployee',
-    firstNameKana: 'lam',
-    lastNameKana: 'hua',
-    firstName: 'lam',
-    lastName: 'hua',
-    deptCode: 'DPcode',
-    deptName: '34675867897',
-    roleCode: 'V001',
-    roleName: 'User',
-    email: 'lam@gmail.com',
+    title: '承認する',
+    children: ['申請を承認', '承認済み一覧'],
   },
   {
-    key: 1,
-    userId: 'bp_acf_saas_wf_dev',
-    firstNameKana: 'sato',
-    lastNameKana: 'sato',
-    firstName: 'sato',
-    lastName: 'sato',
-    deptCode: 'DPT02',
-    deptName: 'Test 1234',
-    roleCode: 'P0222',
-    roleName: 'Admin',
-    email: 'test@gmail.com',
+    title: '管理者機能',
+    children: ['基本情報設定', '新規申請書の作成', '既存申請書の修正'],
   },
   {
-    key: 2,
-    userId: 'Test-lamEmployee',
-    firstNameKana: 'lam',
-    lastNameKana: 'hua',
-    firstName: 'lam',
-    lastName: 'hua',
-    deptCode: 'DPcode',
-    deptName: '34675867897',
-    roleCode: 'V001',
-    roleName: 'User',
-    email: 'lam@gmail.com',
+    title: 'Menu',
+    children: ['会社マスタ管理', '部署一覧', '役職一覧'],
   },
   {
-    key: 1,
-    userId: 'bp_acf_saas_wf_dev',
-    firstNameKana: 'sato',
-    lastNameKana: 'sato',
-    firstName: 'sato',
-    lastName: 'sato',
-    deptCode: 'DPT02',
-    deptName: 'Test 1234',
-    roleCode: 'P0222',
-    roleName: 'Admin',
-    email: 'test@gmail.com',
+    title: '登録',
+    children: ['ファイル一覧', '申請ルート一覧・編集'],
   },
   {
-    key: 2,
-    userId: 'Test-lamEmployee',
-    firstNameKana: 'lam',
-    lastNameKana: 'hua',
-    firstName: 'lam',
-    lastName: 'hua',
-    deptCode: 'DPcode',
-    deptName: '34675867897',
-    roleCode: 'V001',
-    roleName: 'User',
-    email: 'lam@gmail.com',
-  },
-  {
-    key: 1,
-    userId: 'bp_acf_saas_wf_dev',
-    firstNameKana: 'sato',
-    lastNameKana: 'sato',
-    firstName: 'sato',
-    lastName: 'sato',
-    deptCode: 'DPT02',
-    deptName: 'Test 1234',
-    roleCode: 'P0222',
-    roleName: 'Admin',
-    email: 'test@gmail.com',
-  },
-  {
-    key: 2,
-    userId: 'Test-lamEmployee',
-    firstNameKana: 'lam',
-    lastNameKana: 'hua',
-    firstName: 'lam',
-    lastName: 'hua',
-    deptCode: 'DPcode',
-    deptName: '34675867897',
-    roleCode: 'V001',
-    roleName: 'User',
-    email: 'lam@gmail.com',
-  },
-  {
-    key: 1,
-    userId: 'bp_acf_saas_wf_dev',
-    firstNameKana: 'sato',
-    lastNameKana: 'sato',
-    firstName: 'sato',
-    lastName: 'sato',
-    deptCode: 'DPT02',
-    deptName: 'Test 1234',
-    roleCode: 'P0222',
-    roleName: 'Admin',
-    email: 'test@gmail.com',
-  },
-  {
-    key: 2,
-    userId: 'Test-lamEmployee',
-    firstNameKana: 'lam',
-    lastNameKana: 'hua',
-    firstName: 'lam',
-    lastName: 'hua',
-    deptCode: 'DPcode',
-    deptName: '34675867897',
-    roleCode: 'V001',
-    roleName: 'User',
-    email: 'lam@gmail.com',
-  },
-  {
-    key: 1,
-    userId: 'bp_acf_saas_wf_dev',
-    firstNameKana: 'sato',
-    lastNameKana: 'sato',
-    firstName: 'sato',
-    lastName: 'sato',
-    deptCode: 'DPT02',
-    deptName: 'Test 1234',
-    roleCode: 'P0222',
-    roleName: 'Admin',
-    email: 'test@gmail.com',
-  },
-  {
-    key: 2,
-    userId: 'Test-lamEmployee',
-    firstNameKana: 'lam',
-    lastNameKana: 'hua',
-    firstName: 'lam',
-    lastName: 'hua',
-    deptCode: 'DPcode',
-    deptName: '34675867897',
-    roleCode: 'V001',
-    roleName: 'User',
-    email: 'lam@gmail.com',
-  },
-  {
-    key: 1,
-    userId: 'bp_acf_saas_wf_dev',
-    firstNameKana: 'sato',
-    lastNameKana: 'sato',
-    firstName: 'sato',
-    lastName: 'sato',
-    deptCode: 'DPT02',
-    deptName: 'Test 1234',
-    roleCode: 'P0222',
-    roleName: 'Admin',
-    email: 'test@gmail.com',
-  },
-  {
-    key: 2,
-    userId: 'Test-lamEmployee',
-    firstNameKana: 'lam',
-    lastNameKana: 'hua',
-    firstName: 'lam',
-    lastName: 'hua',
-    deptCode: 'DPcode',
-    deptName: '34675867897',
-    roleCode: 'V001',
-    roleName: 'User',
-    email: 'lam@gmail.com',
+    title: '輸入',
+    children: ['ユーザーインポート', 'インポートファイル管理', 'ユーザー一覧'],
   },
 ])
 
-/* ==============================
-   Pagination
-============================== */
-const pagination = reactive({
-  current: 1,
-  pageSize: 10,
-  total: dataSource.value.length,
-  showSizeChanger: true,
+const openIndex = ref<number | null>(null)
+const users = ref<User[]>([])
+const selectedUser = ref<User | null>(null)
+const showDeleteModal = ref(false)
+const language = ref('en')
+const isLoading = ref<boolean>(false)
+const showUserList = ref<boolean>(true)
+
+onMounted(() => {
+  getData()
 })
 
-interface PaginationInfo {
-  current: number
-  pageSize: number
-  total?: number
+const toggleLanguage = () => {
+  language.value = language.value === 'en' ? 'ja' : 'en'
 }
 
-const handleTableChange = (pag: PaginationInfo) => {
-  pagination.current = pag.current
-  pagination.pageSize = pag.pageSize
+const toggleMenu = (index: number) => {
+  openIndex.value = openIndex.value === index ? null : index
 }
 
-/* ==============================
-   Search Action
-============================== */
-const handleSearch = () => {
-  loading.value = true
+// const toggleUserList = () => {
+//   showUserList.value = !showUserList.value
+// }
 
-  setTimeout(() => {
-    dataSource.value = dataSource.value.filter((user) => user.userId.includes(searchKeyword.value))
-    loading.value = false
-  }, 500)
+const getData = async () => {
+  isLoading.value = true
+  const data = await userService.getUsers()
+  users.value = data.items
+  isLoading.value = false
+}
+
+const handleClickEdit = (user: User) => {
+  router.push(`/user/edit/${user.user_id}`)
+}
+
+const handleClickDelete = (user: User) => {
+  selectedUser.value = user
+  showDeleteModal.value = true
+}
+
+const closeDeleteModal = () => {
+  selectedUser.value = null
+  showDeleteModal.value = false
+}
+
+const confirmDelete = async () => {
+  if (!selectedUser.value?.i_id) {
+    return
+  }
+
+  const res = await userService.deleteUser(selectedUser.value.i_id)
+  console.log('delete user: ', res)
+
+  showDeleteModal.value = false
+  selectedUser.value = null
+  await getData()
 }
 </script>
-
-<template>
-  <a-layout style="min-height: 100vh">
-    <!-- ================= Sidebar ================= -->
-    <a-layout-sider v-model:collapsed="collapsed" collapsible width="240">
-      <div class="logo">ACF Baas Workflow</div>
-      <div></div>
-      <a-menu theme="dark" mode="inline">
-        <a-sub-menu key="1">
-          <template #title>Attendance</template>
-          <a-menu-item key="1-1">Attendance List</a-menu-item>
-        </a-sub-menu>
-
-        <a-sub-menu key="2">
-          <template #title>Request</template>
-          <a-menu-item key="2-1">Request List</a-menu-item>
-        </a-sub-menu>
-
-        <a-sub-menu key="3">
-          <template #title>User</template>
-          <a-menu-item key="3-1">User List</a-menu-item>
-          <a-menu-item key="3-2">User Register</a-menu-item>
-          <a-menu-item key="3-3">Import User</a-menu-item>
-        </a-sub-menu>
-      </a-menu>
-    </a-layout-sider>
-
-    <!-- ================= Main ================= -->
-    <a-layout>
-      <!-- Header -->
-      <a-layout-header class="header">
-        <div style="float: right">bp_acf_baas_wf_dev</div>
-      </a-layout-header>
-
-      <!-- Content -->
-      <a-layout-content style="margin: 24px">
-        <h2>User List</h2>
-        <p>List user registered</p>
-
-        <a-card title="Search user">
-          <!-- Search -->
-          <div class="search-row">
-            <a-input
-              v-model:value="searchKeyword"
-              placeholder="email or username"
-              style="max-width: 400px"
-            />
-            <a-button type="primary" @click="handleSearch"> Search </a-button>
-
-            <div class="register-btn">
-              <a-button type="primary"> Register </a-button>
-            </div>
-          </div>
-
-          <!-- Table -->
-          <a-table
-            :columns="columns"
-            :data-source="dataSource"
-            :loading="loading"
-            :pagination="pagination"
-            bordered
-            @change="handleTableChange"
-          />
-        </a-card>
-      </a-layout-content>
-    </a-layout>
-  </a-layout>
-</template>
-
-<style scoped>
-.logo {
-  color: white;
-  text-align: center;
-  padding: 16px;
-  font-weight: bold;
-}
-
-.header {
-  background: white;
-  padding: 0 24px;
-}
-
-.search-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-  align-items: center;
-}
-
-.register-btn {
-  margin-left: auto;
-}
-</style>

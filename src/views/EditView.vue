@@ -44,7 +44,7 @@
         </ul>
       </div>
       <!-- main content -->
-      <div class="flex-1 min-w-0 bg-[#f1f7f7] flex flex-col">
+      <div class="flex-1 bg-[#f1f7f7] flex flex-col">
         <!-- content header -->
         <div class="h-32 bg-white shadow-md">
           <div class="flex gap-2">
@@ -58,7 +58,7 @@
         </div>
         <!-- content body -->
         <div class="bg-inherit p-8 flex-1 flex">
-          <div class="bg-white rounded-lg shadow p-8 max-w-5xl mx-auto">
+          <div class="bg-white rounded-lg shadow p-8 w-full">
             <!-- title -->
             <h2 class="text-lg font-semibold mb-6">
               基本情報

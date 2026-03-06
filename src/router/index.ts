@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import { useAuthStore } from '@/stores/auth.store'
+import UserLayout from '@/layout/UserLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,18 +36,14 @@ const router = createRouter({
       component: () => import('../views/CategoryView.vue'),
       meta: { requiresAuth: true },
     },
-    {
-      path: '/user',
-      name: 'user',
-      component: () => {
-        return import('../views/UserView.vue')
-      },
-    },
+    // -------------------------------------------------------------
+    // demo user
+    // -------------------------------------------------------------
     {
       path: '/react',
       name: 'react',
       component: () => {
-        return import('../views/UserViewByReact.vue')
+        return import('../views/UserView.vue')
       },
     },
     {
@@ -63,12 +60,47 @@ const router = createRouter({
         return import('../views/EditView.vue')
       },
     },
+    // -------------------------------------------------------------
+    // test login user
+    // -------------------------------------------------------------
     {
       path: '/user/login',
       name: 'user-login',
       component: () => {
         return import('../views/UserLoginView.vue')
       },
+    },
+    // -------------------------------------------------------------
+    // users route mới
+    // -------------------------------------------------------------
+    {
+      path: '/users',
+      name: 'users',
+      component: UserLayout,
+      children: [
+        {
+          path: '',
+          component: () => {
+            return import('../views/UserView.vue')
+          },
+          children: [
+            {
+              path: 'new',
+              name: 'users-new',
+              component: () => {
+                return import('../views/UserView.vue')
+              },
+            },
+            {
+              path: ':user_id/edit',
+              name: 'users-edit',
+              component: () => {
+                return import('../views/EditView.vue')
+              },
+            },
+          ],
+        },
+      ],
     },
   ],
 })
