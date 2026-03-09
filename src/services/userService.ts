@@ -24,10 +24,13 @@ export const userService = {
 
     return res.data
   },
-  getUsers: async () => {
+  getUsers: async (searchString?: string) => {
     const res = await api.post<{ items: User[] }>(
       `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/search`,
       {
+        conditions: searchString
+          ? [{ id: 'email', search_value: [searchString], exact_match: false }]
+          : [],
         page: 1,
         per_page: 0,
         use_display_id: true,
@@ -59,32 +62,25 @@ export const userService = {
     )
     return res.data
   },
-  createUser: async (
-    user: User,
-    departmentId: string,
-    positionId: string,
-    companyId: string,
-  ) => {
-    const { lookup_items, ...userWithoutLookup } = user
+  createUser: async (user: User, departmentId: string, positionId: string, companyId: string) => {
+    const { required_change_email, lookup_items, ...userWithoutLookup } = user
 
     const res = await api.post<{
       item: {
         i_id: string
       }
-    }>(
-      `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/new`,
-      {
-        item: {
-          ...userWithoutLookup,
-          user_name: user.email.split('@')[0],
-          department_lookup: departmentId,
-          position_lookup: positionId,
-          company_lookup: companyId,
-        },
-        return_item_result: true,
-        return_display_id: true,
+    }>(`/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/new`, {
+      item: {
+        ...userWithoutLookup,
+        required_change_email: required_change_email.toString(),
+        user_name: user.email.split('@')[0],
+        department_lookup: departmentId,
+        position_lookup: positionId,
+        company_lookup: companyId,
       },
-    )
+      return_item_result: true,
+      return_display_id: true,
+    })
     return res
   },
   updateUser: async (
@@ -95,8 +91,6 @@ export const userService = {
     positionCode: string,
     companyId: string,
   ) => {
-    const { user_id, i_id, lookup_items, ...userWithoutLookup } = user
-
     const res = await api.post<{
       itemHistory: {
         IsChanged: boolean
@@ -105,6 +99,7 @@ export const userService = {
       `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/edit/${user.i_id}`,
       {
         item: {
+          required_change_email: user.required_change_email.toString(),
           approval_permisson: user.approval_permisson?.toString(),
           first_name_kanji: user.first_name_kanji,
           last_name_kanji: user.last_name_kanji,
@@ -126,6 +121,21 @@ export const userService = {
     )
     return res.data
   },
+  softDeleteUser: async (userId: string) => {
+    const res = await api.post<{
+      deleted_at: string
+    }>(
+      `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/edit/${userId}`,
+      {
+        item: {
+          deleted_at: new Date().toISOString() as string,
+        },
+        is_force_update: true,
+        use_display_id: true,
+      },
+    )
+    return res.data
+  },
   deleteUser: async (user_i_id: string) => {
     const res = await api.delete(
       `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/delete/${user_i_id}`,
@@ -133,6 +143,7 @@ export const userService = {
     )
     return res.data
   },
+  //add user vao hexabase
   addUser: async (user: User) => {
     const res = await api.post<AddUserResponse>(`/users`, {
       email: user.email,
@@ -147,6 +158,37 @@ export const userService = {
       confirm_email_ack: true,
       exclusive_w_id: '6980819286bbce7dbccd7efb',
       user_code: user.email.split('@')[0],
+    })
+    return res.data
+  },
+  //xoa user khoi hexabase
+  removeAccountFromGroup: async (accountId: string) => {
+    const res = await api.delete<{
+      error: string
+    }>(`/users`, {
+      data: {
+        g_id: '6980819286bbce7dbccd7efc',
+        u_id: accountId,
+        w_id: '6980819286bbce7dbccd7efb',
+      },
+    })
+    return res.data
+  },
+  //upadte user trong hexabase
+  updateUserInHexabase: async (accountId: string, email: string) => {
+    const res = await api.post<{
+      has_error: boolean
+    }>(`/groups/6980819286bbce7dbccd7efc/users`, {
+      members: [
+        {
+          user_id: accountId,
+          values: {
+            user_name: email.split('@')[0],
+            user_code: email.split('@')[0],
+            email: '',
+          },
+        },
+      ],
     })
     return res.data
   },

@@ -29,6 +29,7 @@
         @on-click-edit="handleClickEdit"
         @on-click-delete="handleClickDelete"
         @on-click-create="handleClickCreate"
+        @on-click-search="handleClickSearch"
       />
       <UserViewForm
         v-else-if="route.name === 'users-new' || route.name === 'users-edit'"
@@ -107,8 +108,17 @@ const toggleMenu = (index: number) => {
 const getData = async () => {
   isLoading.value = true
   const data = await userService.getUsers()
-  users.value = data.items
+  users.value = data.items.filter((user) => user.deleted_at === undefined)
   isLoading.value = false
+  console.log('users: ', users.value)
+}
+
+const handleClickSearch = async (searchString: string) => {
+  isLoading.value = true
+  const data = await userService.getUsers(searchString)
+  users.value = data.items.filter((user) => user.deleted_at === undefined)
+  isLoading.value = false
+  console.log('users: ', users.value)
 }
 
 const handleClickEdit = (user: User) => {
@@ -134,8 +144,12 @@ const confirmDelete = async () => {
     return
   }
 
-  const res = await userService.deleteUser(selectedUser.value.i_id)
-  console.log('delete user: ', res)
+  const res = await userService.softDeleteUser(selectedUser.value.i_id)
+  console.log('soft delete user: ', res)
+  const removeUserResponse = await userService.removeAccountFromGroup(
+    selectedUser?.value?.u_id || '',
+  )
+  console.log('remove user response: ', removeUserResponse)
 
   showDeleteModal.value = false
   selectedUser.value = null

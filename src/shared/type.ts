@@ -12,6 +12,9 @@ export type Position = {
 }
 
 export type User = {
+  required_change_email: boolean
+  u_id: string
+  deleted_at?: string
   user_id?: number
   i_id?: string
   approval_permisson: string
@@ -41,6 +44,7 @@ export type AddUserResponse = {
   added: boolean
   exists: boolean
   user_profile: {
+    u_id: string
     confirmed: boolean
     email: string
     email_sent: boolean

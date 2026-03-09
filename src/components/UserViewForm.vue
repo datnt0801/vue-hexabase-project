@@ -384,6 +384,7 @@ const positions = ref<Position[]>([])
 const selectedPositionId = ref<string>('')
 const selectedDepartmentId = ref<string>('')
 const user_id = ref<string>('')
+const oldEmail = ref<string>('')
 
 const route = useRoute()
 
@@ -398,10 +399,12 @@ const isEditMode = computed(() => {
   return route.name === 'users-edit' && route.params.user_id
 })
 
+// lấy thông tin user theo user_id
 const getUserInfo = async (user_id: string) => {
   const res = await userService.getUser(user_id)
   Object.assign(user, res.items[0] as User)
-  console.log('user info get: ', user)
+  oldEmail.value = user.email
+
   if (user.department_code) {
     selectedDepartmentId.value =
       departments.value.find((d) => d.department_code === user.department_code)?.i_id || ''
@@ -410,16 +413,16 @@ const getUserInfo = async (user_id: string) => {
     selectedPositionId.value =
       positions.value.find((p) => p.position_code === user.position_code)?.i_id || ''
   }
-  console.log('get selectedDepartmentId: ', selectedDepartmentId.value)
-  console.log('get selectedPositionId: ', selectedPositionId.value)
 }
 
 onMounted(async () => {
+  //lấy tất cả departments và positions
   await Promise.all([getDepartments(), getPositions()])
     .then(() => {})
     .catch((error) => {
       console.error('promise error: ', error)
     })
+  // nếu là edit mode và có user_id thì lấy thông tin user
   if (isEditMode.value && route.params.user_id) {
     user_id.value = route.params.user_id as string
     if (user_id.value) {
@@ -436,6 +439,7 @@ const selectedDepartment = computed(() => {
 })
 
 const user = reactive<User>({
+  required_change_email: false,
   approval_permisson: '',
   first_name_kanji: '',
   last_name_kanji: '',
@@ -446,6 +450,7 @@ const user = reactive<User>({
   position_code: '',
   department_code: '',
   company_code: '',
+  u_id: '',
   lookup_items: {
     company_lookup: {
       company_name: '',
@@ -511,6 +516,13 @@ const getPositions = async () => {
 }
 
 const registerUser = async () => {
+  const addedUserResponse = await addUser()
+  // TODO: handle gửi 2 lần xong check exist trong hexabase
+  // if (!addedUserResponse.added) {
+  //   alert('メールアドレスは既に登録されています / The email address has been registered.')
+  //   return
+  // }
+
   if (selectedPosition.value?.department_code !== selectedDepartment.value?.department_code) {
     alert('部署と役職のコードが一致しません / The department and position code do not match')
     return
@@ -518,6 +530,8 @@ const registerUser = async () => {
   const res = await userService.createUser(
     {
       ...user,
+      required_change_email: false,
+      u_id: addedUserResponse.user_profile.u_id,
       department_code: selectedDepartment.value?.department_code || '',
       position_code: selectedPosition.value?.position_code || '',
       company_code: 'K1',
@@ -527,13 +541,14 @@ const registerUser = async () => {
     '69a504f0c748fcad046f85e5', //company i_id
   )
   console.log('register user: ', res)
-  addUser()
+  router.push('/users')
 }
 
 const addUser = async () => {
   console.log('user to add: ', user)
   const res = await userService.addUser(user)
   console.log('add user response: ', res)
+  return res
   // if (res.added) {
   //   alert('ユーザーを登録しました / The user has been registered successfully')
   //   router.push('/react')
@@ -544,12 +559,17 @@ const addUser = async () => {
 }
 
 const updateUser = async () => {
+  const updateUserInHexabaseResponse = await userService.updateUserInHexabase(user.u_id, user.email)
+  console.log('update user in hexabase response: ', updateUserInHexabaseResponse)
   if (selectedPosition.value?.department_code !== selectedDepartment.value?.department_code) {
     alert('部署と役職のコードが一致しません / The department and position code do not match')
     return
   }
   const res = await userService.updateUser(
-    user,
+    {
+      ...user,
+      required_change_email: oldEmail.value !== user.email ? true : user.required_change_email,
+    } as User,
     selectedDepartment.value?.i_id || '',
     selectedDepartment.value?.department_code || '',
     selectedPosition.value?.i_id || '',
@@ -563,6 +583,7 @@ const updateUser = async () => {
   // } else {
   //   alert('更新に失敗しました / Failed to update')
   // }
+  router.push('/users')
 }
 </script>
 <style scoped>

@@ -23,7 +23,7 @@
           />
           <button
             class="bg-gray-300 p-2 rounded text-white whitespace-nowrap"
-            @click="emit('on-click-search')"
+            @click="emit('on-click-search', searchKeyword)"
           >
             検索
           </button>
@@ -36,7 +36,7 @@
             登録する
           </button>
         </div>
-        <p class="mx-4 text-xs">検索結果: {{ filteredUsers.length }}件</p>
+        <p class="mx-4 text-xs">検索結果: {{ props.users.length }}件</p>
       </div>
       <!-- table -->
       <div class="flex-1 min-w-0">
@@ -101,7 +101,7 @@
               <!-- BODY -->
               <tbody class="bg-white divide-y divide-gray-100">
                 <tr
-                  v-for="user in sortedUsers"
+                  v-for="user in paginatedUsers"
                   :key="user.user_id"
                   class="hover:bg-gray-50 transition"
                 >
@@ -189,7 +189,7 @@
                   </td>
                 </tr>
 
-                <tr v-if="users.length === 0">
+                <tr v-if="paginatedUsers.length === 0">
                   <td colspan="4" class="text-center py-4 text-gray-500">No data available</td>
                 </tr>
               </tbody>
@@ -199,9 +199,52 @@
       </div>
       <!-- pagination -->
       <div class="h-12 flex justify-center items-center gap-2">
-        <!-- <button><</button>
-            <button v-for="value in [1, 2, 3]" :key="value">{{ value }}</button>
-            <button>></button> -->
+        <!-- <button @click="currentPage > 1 ? currentPage-- : currentPage = 1"> -->
+        <button v-if="currentPage > 1" @click="currentPage--">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 19L8 12L15 5"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <button
+          v-for="page in totalPages"
+          :key="page"
+          @click="currentPage = page"
+          :class="{
+            'rounded-full px-4 py-2 bg-blue-500 font-bold text-xl text-white': currentPage === page,
+            'rounded-full px-4 py-2 font-bold text-xl text-blue-500': currentPage !== page,
+          }"
+        >
+          {{ page }}
+        </button>
+        <button v-if="currentPage < totalPages" @click="currentPage++">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M9 5L16 12L9 19"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -213,42 +256,52 @@ import type { User } from '@/shared/type'
 const sortAsc = ref(true)
 const searchKeyword = ref('')
 
+const currentPage = ref(1)
+const pageSize = ref(1)
+const total = computed(() => props.users.length)
+const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 const props = defineProps<{
   language: string
   users: User[]
 }>()
 
 const emit = defineEmits<{
-  (e: 'on-click-search'): void
+  (e: 'on-click-search', searchString: string): void
   (e: 'on-click-create'): void
   (e: 'on-click-edit', user: User): void
   (e: 'on-click-delete', user: User): void
   (e: 'on-click-show-delete-confirm-modal'): void
 }>()
 
-const filteredUsers = computed(() => {
-  if (!searchKeyword.value) return props.users
-
-  const keyword = searchKeyword.value.toLowerCase()
-
-  return props.users.filter(
-    (user) =>
-      user.user_name.toLowerCase().includes(keyword) ||
-      user.first_name_kanji.toLowerCase().includes(keyword) ||
-      user.last_name_kanji.toLowerCase().includes(keyword) ||
-      user.first_name_kana.toLowerCase().includes(keyword) ||
-      user.last_name_kana.toLowerCase().includes(keyword),
-  )
+const paginatedUsers = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return props.users.slice(start, end)
 })
 
-const sortedUsers = computed(() => {
-  return [...filteredUsers.value].sort((a, b) => {
-    if (sortAsc.value) {
-      return a.user_name.localeCompare(b.user_name)
-    }
-    return b.user_name.localeCompare(a.user_name)
-  })
-})
+// const filteredUsers = computed(() => {
+//   if (!searchKeyword.value) return props.users
+
+//   const keyword = searchKeyword.value.toLowerCase()
+
+//   return props.users.filter(
+//     (user) =>
+//       user.user_name.toLowerCase().includes(keyword) ||
+//       user.first_name_kanji.toLowerCase().includes(keyword) ||
+//       user.last_name_kanji.toLowerCase().includes(keyword) ||
+//       user.first_name_kana.toLowerCase().includes(keyword) ||
+//       user.last_name_kana.toLowerCase().includes(keyword),
+//   )
+// })
+
+// const sortedUsers = computed(() => {
+//   return [...filteredUsers.value].sort((a, b) => {
+//     if (sortAsc.value) {
+//       return a.user_name.localeCompare(b.user_name)
+//     }
+//     return b.user_name.localeCompare(a.user_name)
+//   })
+// })
 
 const toggleSort = () => {
   sortAsc.value = !sortAsc.value
