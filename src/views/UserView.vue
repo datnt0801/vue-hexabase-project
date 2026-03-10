@@ -34,6 +34,7 @@
       <UserViewForm
         v-else-if="route.name === 'users-new' || route.name === 'users-edit'"
         :language="language"
+        @on-click-toggle-loading="toggleLoading"
       />
     </div>
     <!-- End Content -->
@@ -87,6 +88,9 @@ const selectedUser = ref<User | null>(null)
 const showDeleteModal = ref(false)
 const language = ref('en')
 const isLoading = ref<boolean>(false)
+const toggleLoading = () => {
+  isLoading.value = !isLoading.value
+}
 
 onMounted(() => {
   getData()

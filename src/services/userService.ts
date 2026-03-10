@@ -1,7 +1,48 @@
 import api from '@/services/api'
 import type { AddUserResponse, Department, Position, User } from '@/shared/type'
+import axios from 'axios'
 
 export const userService = {
+  confirmUserEmail: async (emailConfirmationID: string, token: string) => {
+    const res = await axios.post(
+      `${import.meta.env.VITE_HEXABASE_API_BASE_URL}/users/confirmations`,
+      {
+        confirmation_id: emailConfirmationID,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    )
+    return res
+  },
+  updateUserEmailRequest: async (email: string, token: string) => {
+    const res = await axios.post(
+      `${import.meta.env.VITE_HEXABASE_API_BASE_URL}/users/email`,
+      {
+        email: email,
+        registration_path: '/abc',
+        sender_address: 'noreply@hexabase.com',
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    )
+    return res.data
+  },
+
+  getUserInfo: async (token: string) => {
+    const res = await axios.get(`${import.meta.env.VITE_HEXABASE_API_BASE_URL}/userinfo`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    console.log('user service info: ', res.data)
+    return res.data
+  },
   getUser: async (user_id: string) => {
     const res = await api.post<{ items: User[] }>(
       `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/search`,
@@ -24,19 +65,26 @@ export const userService = {
 
     return res.data
   },
-  getUsers: async (searchString?: string) => {
+  getUsers: async (searchString?: string, user_id?: string) => {
     const res = await api.post<{ items: User[] }>(
       `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/search`,
       {
-        conditions: searchString
-          ? [{ id: 'email', search_value: [searchString], exact_match: false }]
-          : [],
+        conditions: [
+          ...(searchString
+            ? [{ id: 'email', search_value: [searchString], exact_match: false }]
+            : []),
+          ...(user_id ? [{ id: 'u_id', search_value: [user_id], exact_match: true }] : []),
+        ],
         page: 1,
         per_page: 0,
         use_display_id: true,
         include_lookups: true,
       },
     )
+    console.log('condition search: ', [
+      ...(searchString ? [{ id: 'email', search_value: [searchString], exact_match: false }] : []),
+      ...(user_id ? [{ id: 'u_id', search_value: [user_id], exact_match: true }] : []),
+    ])
 
     return res.data
   },
@@ -82,6 +130,28 @@ export const userService = {
       return_display_id: true,
     })
     return res
+  },
+  removeFlagChangeEmail: async (i_id: string, token: string) => {
+    const res = await axios.post<{
+      itemHistory: {
+        IsChanged: boolean
+      }
+    }>(
+      `${import.meta.env.VITE_HEXABASE_API_BASE_URL}/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/edit/${i_id}`,
+      {
+        item: {
+          required_change_email: 'false',
+        },
+        is_force_update: true,
+        use_display_id: true,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    )
+    return res.data
   },
   updateUser: async (
     user: User,

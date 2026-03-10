@@ -197,55 +197,59 @@
           </div>
         </div>
       </div>
-      <!-- pagination -->
-      <div class="h-12 flex justify-center items-center gap-2">
-        <!-- <button @click="currentPage > 1 ? currentPage-- : currentPage = 1"> -->
-        <button v-if="currentPage > 1" @click="currentPage--">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M15 19L8 12L15 5"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-        <button
-          v-for="page in totalPages"
-          :key="page"
-          @click="currentPage = page"
-          :class="{
-            'rounded-full px-4 py-2 bg-blue-500 font-bold text-xl text-white': currentPage === page,
-            'rounded-full px-4 py-2 font-bold text-xl text-blue-500': currentPage !== page,
-          }"
+    </div>
+    <!-- pagination -->
+    <div class="h-12 flex justify-center items-center gap-2">
+      <!-- <button @click="currentPage > 1 ? currentPage-- : currentPage = 1"> -->
+      <button v-if="currentPage > 1" @click="currentPage--" class="text-blue-700 font-bold text-xl">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          {{ page }}
-        </button>
-        <button v-if="currentPage < totalPages" @click="currentPage++">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9 5L16 12L9 19"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-      </div>
+          <path
+            d="M15 19L8 12L15 5"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        @click="currentPage = page"
+        :class="{
+          'rounded-full px-4 py-2 bg-blue-700 font-bold text-xl text-white': currentPage === page,
+          'rounded-full px-4 py-2 font-bold text-xl text-blue-700': currentPage !== page,
+        }"
+      >
+        {{ page }}
+      </button>
+      <button
+        v-if="currentPage < totalPages"
+        @click="currentPage++"
+        class="text-blue-700 font-bold text-xl"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M9 5L16 12L9 19"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
     </div>
   </div>
 </template>

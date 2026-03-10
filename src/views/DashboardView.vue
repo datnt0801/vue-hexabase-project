@@ -223,6 +223,10 @@ const getData = async (search?: string) => {
   files.value = []
   files.value.push(...newFiles)
 }
+
+const handleChangeRoute = () => {
+  router.push('/users')
+}
 </script>
 
 <template>
@@ -302,6 +306,9 @@ const getData = async (search?: string) => {
           </div>
         </div>
       </div>
+      <button class="bg-blue-500 text-white px-4 py-2 rounded-md" @click="handleChangeRoute">
+        Change Route
+      </button>
 
       <div id="main-content" class="flex flex-1 overflow-y-auto bg-gray-200">
         <div class="w-full overflow-y-auto">

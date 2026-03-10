@@ -36,30 +36,7 @@ const router = createRouter({
       component: () => import('../views/CategoryView.vue'),
       meta: { requiresAuth: true },
     },
-    // -------------------------------------------------------------
-    // demo user code cũ
-    // -------------------------------------------------------------
-    // {
-    //   path: '/react',
-    //   name: 'react',
-    //   component: () => {
-    //     return import('../views/UserView.vue')
-    //   },
-    // },
-    // {
-    //   path: '/user/register',
-    //   name: 'user-register',
-    //   component: () => {
-    //     return import('../views/RegisterView.vue')
-    //   },
-    // },
-    // {
-    //   path: '/user/edit/:user_id',
-    //   name: 'user-edit',
-    //   component: () => {
-    //     return import('../views/EditView.vue')
-    //   },
-    // },
+
     // -------------------------------------------------------------
     // test login user
     // -------------------------------------------------------------
@@ -69,6 +46,18 @@ const router = createRouter({
       component: () => {
         return import('../views/UserLoginView.vue')
       },
+    },
+    {
+      path: '/user/dashboard',
+      name: 'user-dashboard',
+      component: () => import('../views/UserDashBoardView.vue'),
+      // meta: { requiresUserAuth: true, requiresUser: true },
+      meta: { requiresUserAuth: true },
+    },
+    {
+      path: '/user/confirm-change-email',
+      name: 'user-confirm-change-email',
+      component: () => import('../views/ConfirmChangeEmailView.vue'),
     },
     // -------------------------------------------------------------
     // users route mới
@@ -102,11 +91,15 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const isLoggedIn = authStore.isAuthenticated
   const userRole = localStorage.getItem('role')
-
+  const isUserLoggedIn = localStorage.getItem('user_token') !== null
   if (to.meta.requiresAuth && !isLoggedIn) {
     next('/login')
+  } else if (to.meta.requiresUserAuth && !isUserLoggedIn) {
+    next('/user/login')
   } else if (to.meta.requiresAdmin && userRole !== 'admin') {
-    next({ name: 'dashboard' })
+    next({ name: 'user-dashboard' })
+  } else if (to.meta.requiresUser && userRole !== 'user') {
+    next({ name: 'user-login' })
   } else {
     next()
   }

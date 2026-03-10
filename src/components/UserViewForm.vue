@@ -394,6 +394,10 @@ const props = defineProps<{
   userId?: string
 }>()
 
+const emit = defineEmits<{
+  (e: 'on-click-toggle-loading'): void
+}>()
+
 const isEditMode = computed(() => {
   if (props.mode) return props.mode === 'edit'
   return route.name === 'users-edit' && route.params.user_id
@@ -516,6 +520,7 @@ const getPositions = async () => {
 }
 
 const registerUser = async () => {
+  emit('on-click-toggle-loading')
   const addedUserResponse = await addUser()
   // TODO: handle gửi 2 lần xong check exist trong hexabase
   // if (!addedUserResponse.added) {
@@ -541,6 +546,7 @@ const registerUser = async () => {
     '69a504f0c748fcad046f85e5', //company i_id
   )
   console.log('register user: ', res)
+  emit('on-click-toggle-loading')
   router.push('/users')
 }
 

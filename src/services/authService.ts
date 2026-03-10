@@ -3,7 +3,6 @@ import api from '@/services/api'
 export const authService = {
   login: async (payload: { email: string; password: string }) => {
     const res = await api.post('/login', payload)
-    console.log('URL', api.defaults.baseURL)
     return res.data
   },
 
@@ -27,6 +26,7 @@ export const authService = {
       password: password,
       exclusive_w_id: '6980819286bbce7dbccd7efb',
     })
+    console.log('user login service response: ', res.data)
     return res.data
   },
 }
