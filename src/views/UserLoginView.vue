@@ -41,7 +41,9 @@ const handleLogin = async () => {
     console.log('update user email request response: ', res)
     if (res.error === null) {
       console.log('create request to change email successfully')
-      router.push('/user/confirm-change-email')
+      router.push(
+        `/user/${userChangeEmail.u_id}/confirm-change-email/${res.confirmation_id.toString()}`,
+      )
     }
     console.log('update user email request response: ', res)
   } else {

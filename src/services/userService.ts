@@ -22,8 +22,9 @@ export const userService = {
       `${import.meta.env.VITE_HEXABASE_API_BASE_URL}/users/email`,
       {
         email: email,
-        registration_path: '/abc',
-        sender_address: 'noreply@hexabase.com',
+        no_confirm_email: true,
+        // registration_path: '/abc',
+        // sender_address: 'noreply@hexabase.com',
       },
       {
         headers: {
@@ -131,24 +132,19 @@ export const userService = {
     })
     return res
   },
-  removeFlagChangeEmail: async (i_id: string, token: string) => {
-    const res = await axios.post<{
+  removeFlagChangeEmail: async (i_id: string) => {
+    const res = await api.post<{
       itemHistory: {
         IsChanged: boolean
       }
     }>(
-      `${import.meta.env.VITE_HEXABASE_API_BASE_URL}/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/edit/${i_id}`,
+      `/applications/698081c54eabe6a4410ca1ae/datastores/698081fd6d977907383822bb/items/edit/${i_id}`,
       {
         item: {
           required_change_email: 'false',
         },
         is_force_update: true,
         use_display_id: true,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       },
     )
     return res.data

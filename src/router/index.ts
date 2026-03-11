@@ -55,7 +55,7 @@ const router = createRouter({
       meta: { requiresUserAuth: true },
     },
     {
-      path: '/user/confirm-change-email',
+      path: '/user/:user_id/confirm-change-email/:confirmation_id',
       name: 'user-confirm-change-email',
       component: () => import('../views/ConfirmChangeEmailView.vue'),
     },
